@@ -1,0 +1,4 @@
+env
+.idea
+orders/db.sqlite3
+orders/orders/__pycache__/
