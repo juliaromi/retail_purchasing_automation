@@ -1,4 +1,7 @@
 env
+.env
 .idea
 orders/db.sqlite3
 orders/orders/__pycache__/
+orders/backend/__pycache__/
+orders/backend/migrations/__pycache__/
