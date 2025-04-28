@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import User, Shop, Category, Model, ProductInfo, Parameter
+from .models import (User, Shop, Category, Model, ProductInfo,
+                     Parameter, ProductParameter, Order, OrderItem)
 
 
 @admin.register(User)
@@ -28,6 +29,21 @@ class ModelAdmin(admin.ModelAdmin):
 
 class ProductInfoAdmin(admin.ModelAdmin):
     list_display = ('product_name', 'model', 'shop', 'quantity', 'price', 'rrp',)
+
+
+@admin.register(ProductParameter)
+class ProductParameterAdmin(admin.ModelAdmin):
+    list_display = ('product_info', 'parameter', 'value', )
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('user', 'created_at', 'status', 'order_total', )
+
+
+@admin.register(OrderItem)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('order', 'product', 'shop', 'quantity', )
 
 
 admin.site.register(Shop, ShopAdmin)
