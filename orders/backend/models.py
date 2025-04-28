@@ -1,3 +1,5 @@
+from random import choices
+
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -164,13 +166,98 @@ class Parameter(models.Model):
     Product parameters model
     """
 
-    name = models.CharField(max_length=50, blank=False, null=False)
+    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
 
     parameters = models.Manager()
+
+    class Meta:
+        verbose_name = 'Product name'
+        verbose_name_plural = 'Product names'
+
+    def __str__(self):
+        return self.name
+
+
+class ProductParameter(models.Model):
+    """
+    Product parameter model
+    """
+
+    product_info = models.ForeignKey(ProductInfo, on_delete=models.CASCADE, blank=False, null=False)
+    parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE, blank=False, null=False)
+    value = models.CharField(max_length=50, blank=False, null=False)
+
+    product_parameters = models.Manager()
 
     class Meta:
         verbose_name = 'Product parameter'
         verbose_name_plural = 'Product parameters'
 
     def __str__(self):
-        return self.name
+        return f'{self.product_info.product_name} has {self.parameter.name} with {self.value} value'
+
+
+class Order(models.Model):
+    """
+    Order model
+    """
+
+    class OrderStatus(models.IntegerChoices):
+        CREATED = 1
+        PAID = 2
+        PROCESSING = 3
+        DISPATCHED = 4
+        IN_TRANSIT = 5
+        DELIVERED = 6
+        CANCELLED = 7
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status =models.IntegerField(choices=OrderStatus, default=1, blank=False)
+
+    orders = models.Manager()
+
+    @property
+    def order_total(self):
+        order_total = 0
+        for product in self.orderitem_set.all():
+            order_total += product.quantity * product.product.price
+        return order_total
+
+
+    class Meta:
+        verbose_name = 'Order'
+        verbose_name_plural = 'Orders'
+
+    def __str__(self):
+        return (f'Order created at {self.created_at} '
+                f'by {self.user} '
+                f'has status: {self.status}')
+
+
+class OrderItem(models.Model):
+    """
+    Order item model
+    """
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=False, null=False)
+    product = models.ForeignKey(ProductInfo, on_delete=models.CASCADE, blank=False, null=False)
+    shop =models.ForeignKey(Shop, on_delete=models.CASCADE, blank=False, null=False)
+    quantity = models.PositiveSmallIntegerField(blank=False, null=False)
+
+    order_items = models.Manager()
+
+    def clean(self):
+        super().clean()
+        if self.quantity < 0:
+            raise ValidationError('Item quantity must be positive')
+
+    class Meta:
+        verbose_name = 'Order item'
+        verbose_name_plural = 'Order items'
+
+    def __str__(self):
+        return (f'{self.product.product_name}: '
+                f'order created at {self.order.created_at}, '
+                f'from {self.shop.name} shop, '
+                f'quantity {self.quantity} pcs')
