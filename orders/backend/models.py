@@ -4,8 +4,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
-# Create your models here.
-
 class UserManager(BaseUserManager):
 
     def create_user(self, login, password, **extra_fields):
@@ -65,3 +63,114 @@ class User(AbstractUser):
 
     def __str__(self):
         return f'User {self.login}: {self.name} {self.lastname}'
+
+
+class Shop(models.Model):
+    """
+    Shop model
+    """
+
+    name = models.CharField(max_length=50, blank=False, null=False)
+    site = models.URLField(blank=True, null=True)
+
+    shops = models.Manager()
+
+    class Meta:
+        verbose_name = 'Shop'
+        verbose_name_plural = 'Shops'
+
+    def __str__(self):
+        return f'Shop {self.name}'
+
+
+class Category(models.Model):
+    """
+    Product category model
+    """
+
+    shops = models.ManyToManyField(Shop, related_name='product_categories')
+    name = models.CharField(max_length=50, blank=False, null=False)
+
+    categories = models.Manager()
+
+    class Meta:
+        verbose_name = 'Product category'
+        verbose_name_plural = 'Product categories'
+
+    def __str__(self):
+        return self.name
+
+
+class Model(models.Model):
+    """
+    Product model model
+    """
+
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='product_models')
+    name = models.CharField(max_length=50, blank=False, null=False)
+
+    products = models.Manager()
+
+    class Meta:
+        verbose_name = 'Product model'
+        verbose_name_plural = 'Product model'
+
+    def __str__(self):
+        return self.name
+
+
+class ProductInfo(models.Model):
+    """
+    Product information model:
+        - product name
+        - model
+        - shop
+        - quantity
+        - price
+        - recommended retail price (rrp)
+    """
+
+    product_name = models.CharField(max_length=50, blank=False, null=False)
+    model = models.ForeignKey(Model, on_delete=models.CASCADE, related_name='products_info')
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='products_info')
+    quantity = models.PositiveIntegerField(blank=False, null=False)
+    price = models.DecimalField(max_digits=12, decimal_places=2, blank=False, null=False)
+    rrp = models.DecimalField(max_digits=12, decimal_places=2, blank=False, null=False)
+
+    products_info = models.Manager()
+
+    class Meta:
+        verbose_name = 'Product info'
+        verbose_name_plural = 'Products info'
+
+    def __str__(self):
+        return (f'Product {self.product_name}: '
+                f'model {self.model}, '
+                f'store in shop {self.shop}, '
+                f'{self.quantity} in stock, '
+                f'price - {self.price}$, '
+                f'rrp - {self.rrp}')
+
+    def clean(self):
+        super().clean()
+        if self.price < 0:
+            raise ValidationError('Price must be positive')
+        if self.rrp < 0:
+            raise ValidationError('RRP must be positive')
+
+
+class Parameter(models.Model):
+    """
+    Product parameters model
+    """
+
+    name = models.CharField(max_length=50, blank=False, null=False)
+
+    parameters = models.Manager()
+
+    class Meta:
+        verbose_name = 'Product parameter'
+        verbose_name_plural = 'Product parameters'
+
+    def __str__(self):
+        return self.name
