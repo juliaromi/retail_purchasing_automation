@@ -1,4 +1,4 @@
-from random import choices
+import re
 
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -219,7 +219,7 @@ class Order(models.Model):
 
     @property
     def order_total(self):
-        order_total = 0
+        order_total: float = 0
         for product in self.orderitem_set.all():
             order_total += product.quantity * product.product.price
         return order_total
@@ -261,3 +261,36 @@ class OrderItem(models.Model):
                 f'order created at {self.order.created_at}, '
                 f'from {self.shop.name} shop, '
                 f'quantity {self.quantity} pcs')
+
+class Contact(models.Model):
+    """
+    User contact model
+    """
+
+    TYPES = [
+        ('PHONE', 'phone number'),
+        ('EMAIL', 'email'),
+    ]
+
+    type = models.CharField(max_length=5, choices=TYPES, blank=False, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
+    value = models.CharField(blank=False, null=False)
+
+    contacts = models.Manager()
+
+    def clean(self):
+        super().clean()
+        if self.type == 'PHONE':
+            if not re.match(r'^[+8]\d{10,11}$', self.value):
+                raise ValidationError('Phone number is invalid')
+        else:
+            if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$', self.value):
+                raise ValidationError('Email is invalid')
+
+
+    class Meta:
+        verbose_name = 'Contact'
+        verbose_name_plural = 'Contacts'
+
+    def __str__(self):
+        return f'{self.user}: {self.type} - {self.value}'
