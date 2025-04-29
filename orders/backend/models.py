@@ -53,6 +53,7 @@ class User(AbstractUser):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    username = None
 
     USERNAME_FIELD = 'login'
     REQUIRED_FIELDS = ['name', 'lastname']
@@ -72,7 +73,7 @@ class Shop(models.Model):
     Shop model
     """
 
-    name = models.CharField(max_length=50, blank=False, null=False)
+    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
     site = models.URLField(blank=True, null=True)
 
     objects = models.Manager()
@@ -91,7 +92,7 @@ class Category(models.Model):
     """
 
     shops = models.ManyToManyField(Shop, related_name='product_categories')
-    name = models.CharField(max_length=50, blank=False, null=False)
+    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
 
     objects = models.Manager()
 
