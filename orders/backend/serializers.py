@@ -10,13 +10,23 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['name', 'lastname', 'login', 'password', 'is_staff', 'is_superuser', 'created_at']
-        read_only_fields = ['created_at']
+        read_only_fields = ['created_at', 'is_staff', 'is_superuser']
         extra_kwargs = {'password': {'write_only': True}}
+
+    def validate(self, value):
+        if not value.get('name'):
+            raise serializers.ValidationError('Name cannot be empty')
+        if not value.get('lastname'):
+            raise serializers.ValidationError('Lastname cannot be empty')
+        if not value.get('login'):
+            raise serializers.ValidationError('Login cannot be empty')
+        if User.objects.filter(login=value.get('login')).exists():
+            raise serializers.ValidationError('The login already exist')
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
-        user = User.objects.create(**validated_data)
-        user.set_password(password)
+        user = User.objects.create_user(password=password, **validated_data)
         user.save()
         return user
 
@@ -41,7 +51,7 @@ class CategorySerializer(serializers.ModelSerializer):
     """
     Category serializer
     """
-    shops = ShopSerializer(many=True, read_only=True)
+    shops = ShopSerializer(many=True, read_only=False)
 
     class Meta:
         model = Category
