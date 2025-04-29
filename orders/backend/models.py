@@ -36,7 +36,7 @@ class UserManager(BaseUserManager):
         admin_user = self.create_user(login, password, **extra_fields)
         admin_user.save(using=self._db)
 
-        if (extra_fields.get('is_staff') and extra_fields.get('is_staff')) is not True:
+        if (extra_fields.get('is_staff') and extra_fields.get('is_superuser')) is not True:
             raise ValidationError('User must be superuser')
 
         return admin_user
@@ -64,7 +64,7 @@ class User(AbstractUser):
         verbose_name_plural = 'Users'
 
     def __str__(self):
-        return f'User {self.login}: {self.name} {self.lastname}'
+        return f'{self.name} {self.lastname}'
 
 
 class Shop(models.Model):
@@ -75,14 +75,14 @@ class Shop(models.Model):
     name = models.CharField(max_length=50, blank=False, null=False)
     site = models.URLField(blank=True, null=True)
 
-    shops = models.Manager()
+    objects = models.Manager()
 
     class Meta:
         verbose_name = 'Shop'
         verbose_name_plural = 'Shops'
 
     def __str__(self):
-        return f'Shop {self.name}'
+        return self.name
 
 
 class Category(models.Model):
@@ -93,7 +93,7 @@ class Category(models.Model):
     shops = models.ManyToManyField(Shop, related_name='product_categories')
     name = models.CharField(max_length=50, blank=False, null=False)
 
-    categories = models.Manager()
+    objects = models.Manager()
 
     class Meta:
         verbose_name = 'Product category'
@@ -111,7 +111,7 @@ class Model(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='product_models')
     name = models.CharField(max_length=50, blank=False, null=False)
 
-    products = models.Manager()
+    objects = models.Manager()
 
     class Meta:
         verbose_name = 'Product model'
@@ -139,7 +139,7 @@ class ProductInfo(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2, blank=False, null=False)
     rrp = models.DecimalField(max_digits=12, decimal_places=2, blank=False, null=False)
 
-    products_info = models.Manager()
+    objects = models.Manager()
 
     class Meta:
         verbose_name = 'Product info'
@@ -168,7 +168,7 @@ class Parameter(models.Model):
 
     name = models.CharField(max_length=50, blank=False, null=False, unique=True)
 
-    parameters = models.Manager()
+    objects = models.Manager()
 
     class Meta:
         verbose_name = 'Product name'
@@ -187,7 +187,7 @@ class ProductParameter(models.Model):
     parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE, blank=False, null=False)
     value = models.CharField(max_length=50, blank=False, null=False)
 
-    product_parameters = models.Manager()
+    objects = models.Manager()
 
     class Meta:
         verbose_name = 'Product parameter'
@@ -215,7 +215,7 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status =models.IntegerField(choices=OrderStatus, default=1, blank=False)
 
-    orders = models.Manager()
+    objects = models.Manager()
 
     @property
     def order_total(self):
@@ -245,7 +245,7 @@ class OrderItem(models.Model):
     shop =models.ForeignKey(Shop, on_delete=models.CASCADE, blank=False, null=False)
     quantity = models.PositiveSmallIntegerField(blank=False, null=False)
 
-    order_items = models.Manager()
+    objects = models.Manager()
 
     def clean(self):
         super().clean()
@@ -272,11 +272,11 @@ class Contact(models.Model):
         ('EMAIL', 'email'),
     ]
 
-    type = models.CharField(max_length=5, choices=TYPES, blank=False, null=False)
+    type = models.CharField(max_length=5, choices=TYPES, blank=False, null=False, default='EMAIL')
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
     value = models.CharField(blank=False, null=False)
 
-    contacts = models.Manager()
+    objects = models.Manager()
 
     def clean(self):
         super().clean()
