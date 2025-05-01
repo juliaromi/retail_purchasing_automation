@@ -5,3 +5,6 @@ orders/db.sqlite3
 orders/orders/__pycache__/
 orders/backend/__pycache__/
 orders/backend/migrations/__pycache__/
+orders/__pycache__/
+orders/backend/management/__pycache__/
+orders/backend/management/commands/__pycache__/
