@@ -3,7 +3,7 @@ import os
 from django.core.management.base import BaseCommand
 from yaml import load, Loader
 
-from ...models import Shop, Category
+from ...models import Shop, Category, Model, ProductInfo, Parameter
 
 
 class Command(BaseCommand):
@@ -16,12 +16,51 @@ class Command(BaseCommand):
         with open(file_path, encoding='utf-8') as file:
             data: dict = load(file, Loader=Loader)
 
+            #Loading store data
             shop_name = data.get('shop')
             shop = Shop.objects.create(name=shop_name)
             print(f'Shop {shop} uploaded')
 
+            #Loading product category data
             categories = data.get('categories')
+            categories_dict = {}
             for category in categories:
                 product_category = Category.objects.create(id=category.get('id'), name=category.get('name'))
                 product_category.shops.add(shop)
+                categories_dict[category.get('id')] = product_category
                 print(f'Category {category.get("name")} uploaded')
+
+            # Loading product model data
+            goods = data.get('goods')
+            models_dict = {}
+            for good in goods:
+                if good.get('model') not in models_dict.keys():
+                    category_id = good.get('category')
+                    category_object = categories_dict.get(category_id)
+                    product_model = Model.objects.create(name=good.get('model'), category=category_object)
+                    models_dict[good.get('model')] = product_model
+                    print(f'Model {good.get("model")} uploaded')
+
+            # Loading product information data
+            products_info_dict = {}
+            for good in goods:
+                model_name = good.get('model')
+                model_object = models_dict.get(model_name)
+                product_info_model = ProductInfo.objects.create(
+                    id=good.get('id'),
+                    product_name=good.get('name'),
+                    model=model_object,
+                    shop=shop,
+                    quantity=good.get('quantity'),
+                    price=good.get('price'),
+                    rrp=good.get('price_rrc'),
+                )
+                products_info_dict[good.get('id')] = product_info_model
+                print(f'Product {good.get("name")} uploaded')
+
+            # Loading product parameter data
+            for good in goods:
+                parameters = good.get('parameters')
+                for parameter in parameters.keys():
+                    parameter_object, created = Parameter.objects.get_or_create(name=parameter)
+                    print(f'Parameter {parameter} uploaded')

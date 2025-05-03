@@ -133,7 +133,7 @@ class ProductInfo(models.Model):
         - recommended retail price (rrp)
     """
 
-    product_name = models.CharField(max_length=50, blank=False, null=False)
+    product_name = models.CharField(blank=False, null=False)
     model = models.ForeignKey(Model, on_delete=models.CASCADE, related_name='products_info')
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='products_info')
     quantity = models.PositiveIntegerField(blank=False, null=False)
