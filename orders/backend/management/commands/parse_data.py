@@ -3,7 +3,7 @@ import os
 from django.core.management.base import BaseCommand
 from yaml import load, Loader
 
-from ...models import Shop, Category, Model, ProductInfo, Parameter
+from ...models import Shop, Category, Model, ProductInfo, Parameter, ProductParameter
 
 
 class Command(BaseCommand):
@@ -17,7 +17,7 @@ class Command(BaseCommand):
             data: dict = load(file, Loader=Loader)
 
             #Loading store data
-            shop_name = data.get('shop')
+            shop_name: dict = data.get('shop')
             shop = Shop.objects.create(name=shop_name)
             print(f'Shop {shop} uploaded')
 
@@ -58,9 +58,23 @@ class Command(BaseCommand):
                 products_info_dict[good.get('id')] = product_info_model
                 print(f'Product {good.get("name")} uploaded')
 
-            # Loading product parameter data
+            # Loading product parameters names
             for good in goods:
                 parameters = good.get('parameters')
                 for parameter in parameters.keys():
                     parameter_object, created = Parameter.objects.get_or_create(name=parameter)
                     print(f'Parameter {parameter} uploaded')
+
+            # Loading product parameters data
+            for good in goods:
+                good_id = good.get('id')
+                product_info_object = products_info_dict.get(good_id)
+                parameters = good.get('parameters')
+                for key, value in parameters.items():
+                    parameter_object = Parameter.objects.get(name=key)
+                    product_parameter_object, created = ProductParameter.objects.get_or_create(
+                        product_info=product_info_object,
+                        parameter=parameter_object,
+                        value=value,
+                    )
+                    print(f"Parameter's info {key}: {value} uploaded")
