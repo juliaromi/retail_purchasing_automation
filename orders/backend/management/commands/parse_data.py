@@ -17,7 +17,7 @@ class Command(BaseCommand):
             data: dict = load(file, Loader=Loader)
 
             #Loading store data
-            shop_name = data.get('shop')
+            shop_name: dict = data.get('shop')
             shop = Shop.objects.create(name=shop_name)
             print(f'Shop {shop} uploaded')
 
