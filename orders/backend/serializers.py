@@ -186,3 +186,18 @@ class ContactSerializer(serializers.ModelSerializer):
             if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$', contact_value):
                 raise serializers.ValidationError('Email is invalid')
         return value
+
+
+class ProductListSerializer(serializers.Serializer):
+    """
+    Serializer for displaying a list of products
+    """
+
+    name = serializers.CharField(source='product_info__product_name')
+    model = serializers.CharField(source='product_info__model__name')
+    category = serializers.CharField(source='product_info__model__category__name')
+    shop = serializers.CharField(source='product_info__shop__name')
+    parameter = serializers.CharField(source='parameter__name')
+    value = serializers.CharField()
+    price = serializers.DecimalField(max_digits=12, decimal_places=2, source='product_info__price')
+    quantity = serializers.IntegerField(source='product_info__quantity')
