@@ -145,12 +145,12 @@ class CartContainsSerializer(serializers.ModelSerializer):
     quantity = serializers.IntegerField()
     total_sum = serializers.SerializerMethodField()
 
+    def get_total_sum(self, obj):
+        return obj.product.price * obj.quantity
+
     class Meta:
         model = OrderItem
         fields = ['name', 'shop', 'price', 'quantity', 'total_sum']
-
-    def get_total_sum(self, obj):
-        return obj.product.price * obj.quantity
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -160,7 +160,10 @@ class OrderSerializer(serializers.ModelSerializer):
     user_login = serializers.EmailField(source='user.login', read_only=True)
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     items = CartContainsSerializer(source='orderitem_set', many=True, read_only=True)
-    order_total = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    order_total = serializers.SerializerMethodField()
+
+    def get_order_total(self, obj):
+        return obj.order_total
 
     class Meta:
         model = Order

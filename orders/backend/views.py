@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, filters, status
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -118,8 +119,8 @@ class CartContainsViewSet(ModelViewSet):
         if quantity_required > product.quantity:
             return Response({'error': f'Quantity bigger then available: {product.quantity}'},
                             status=status.HTTP_400_BAD_REQUEST)
-        if quantity_required > product.quantity:
-            return Response({'error': f'Quantity bigger then available: {product.quantity}'},
+        if quantity_required < 1:
+            return Response({'error': f'Quantity must be bigger then 0'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         order, _ = Order.objects.get_or_create(user=user, status=Order.OrderStatus.CREATED)
@@ -129,7 +130,11 @@ class CartContainsViewSet(ModelViewSet):
 
         if not created:
             order_item.quantity += quantity_required
+            if order_item.quantity > product.quantity:
+                return Response({'error': f'Quantity bigger then available: {product.quantity}'},
+                                status=status.HTTP_400_BAD_REQUEST)
             order_item.save()
+
 
         serializer = self.get_serializer(order_item)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -138,3 +143,19 @@ class CartContainsViewSet(ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['patch'], url_path='decrease')
+    def decrease_quantity(self, request, pk=None):
+        instance = self.get_object()
+        amount = request.data.get('amount', 1)
+
+        if amount < 1:
+            return Response({'error': 'Amount must be bigger then 0'}, status=status.HTTP_400_BAD_REQUEST)
+        if instance.quantity <= amount:
+            instance.delete()
+            return Response({'detail': 'Product removed from cart'}, status=status.HTTP_204_NO_CONTENT)
+
+        instance.quantity -= amount
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
