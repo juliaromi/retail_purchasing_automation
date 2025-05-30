@@ -134,17 +134,38 @@ class ProductParameterSerializer(serializers.ModelSerializer):
         return value
 
 
+class CartContainsSerializer(serializers.ModelSerializer):
+    """
+    Serializer for displaying user's cart contains
+    """
+
+    name = serializers.CharField(source='product.product_name', read_only=True)
+    shop = serializers.CharField(source='shop.name', read_only=True)
+    price = serializers.DecimalField(max_digits=12, decimal_places=2, source='product.price', read_only=True)
+    quantity = serializers.IntegerField()
+    total_sum = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItem
+        fields = ['name', 'shop', 'price', 'quantity', 'total_sum']
+
+    def get_total_sum(self, obj):
+        return obj.product.price * obj.quantity
+
+
 class OrderSerializer(serializers.ModelSerializer):
     """
     Order serializer
     """
     user_login = serializers.EmailField(source='user.login', read_only=True)
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    items = CartContainsSerializer(source='orderitem_set', many=True, read_only=True)
+    order_total = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
 
     class Meta:
         model = Order
-        fields = ['user_login', 'user', 'created_at', 'status', 'order_total']
-        read_only_fields = ['created_at', 'order_total']
+        fields = ['user_login', 'user', 'created_at', 'status', 'items', 'order_total']
+        read_only_fields = ['created_at', 'items', 'order_total']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
