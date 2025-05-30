@@ -1,4 +1,5 @@
 import re
+from decimal import Decimal
 
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -220,10 +221,10 @@ class Order(models.Model):
 
     @property
     def order_total(self):
-        order_total: float = 0
+        total = Decimal('0.00')
         for product in self.orderitem_set.all():
-            order_total += product.quantity * product.product.price
-        return order_total
+            total += product.quantity * product.product.price
+        return total
 
 
     class Meta:
