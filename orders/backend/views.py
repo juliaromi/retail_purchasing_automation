@@ -61,6 +61,17 @@ class OrderViewSet(ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user, status=Order.OrderStatus.CREATED)
+
+    @action(detail=False, methods=['get'], url_path='user_cart')
+    def user_cart(self, request):
+        order = self.get_queryset().first()
+        if not order:
+            return Response({'detail': 'cart is empty'}, status=404)
+        serializer = self.get_serializer(order)
+        return Response(serializer.data)
+
 
 class OrderItemViewSet(ModelViewSet):
     queryset = OrderItem.objects.all()
