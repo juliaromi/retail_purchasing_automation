@@ -1,12 +1,7 @@
 from django.contrib import admin
 
 from .models import (User, Shop, Category, Model, ProductInfo,
-                     Parameter, ProductParameter, Order, OrderItem, Contact)
-
-
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('login', 'name', 'lastname', 'is_staff', 'is_superuser', 'created_at',)
+                     Parameter, ProductParameter, Order, OrderItem, Contact, DeliveryAddress)
 
 
 class CategoryInline(admin.TabularInline):
@@ -46,9 +41,21 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ('order', 'product', 'shop', 'quantity', )
 
 
-@admin.register(Contact)
-class ContactAdmin(admin.ModelAdmin):
-    list_display = ('type', 'user', 'value',)
+class ContactAdmin(admin.TabularInline):
+    model = Contact
+
+
+class DeliveryAddressAdmin(admin.TabularInline):
+    model = DeliveryAddress
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('login', 'first_name', 'middle_name', 'last_name', 'is_staff', 'is_superuser', 'created_at',)
+    inlines = [
+        ContactAdmin,
+        DeliveryAddressAdmin,
+    ]
 
 
 admin.site.register(Shop, ShopAdmin)

@@ -2,7 +2,8 @@ import re
 
 from rest_framework import serializers
 
-from .models import User, Shop, Category, Model, ProductInfo, Parameter, ProductParameter, Order, OrderItem, Contact
+from .models import User, Shop, Category, Model, ProductInfo, Parameter, ProductParameter, Order, OrderItem, Contact, \
+    DeliveryAddress
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -11,15 +12,15 @@ class UserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ['name', 'lastname', 'login', 'password', 'is_staff', 'is_superuser', 'created_at']
+        fields = ['first_name', 'middle_name', 'last_name', 'login', 'password', 'is_staff', 'is_superuser', 'created_at']
         read_only_fields = ['created_at', 'is_staff', 'is_superuser']
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, value):
-        if not value.get('name'):
-            raise serializers.ValidationError('Name cannot be empty')
-        if not value.get('lastname'):
-            raise serializers.ValidationError('Lastname cannot be empty')
+        if not value.get('first_name'):
+            raise serializers.ValidationError('First name cannot be empty')
+        if not value.get('last_name'):
+            raise serializers.ValidationError('Last name cannot be empty')
         if not value.get('login'):
             raise serializers.ValidationError('Login cannot be empty')
         if User.objects.filter(login=value.get('login')).exists():
@@ -190,12 +191,10 @@ class ContactSerializer(serializers.ModelSerializer):
     """
     Contacts serializer
     """
-    user_login = serializers.EmailField(source='user.login', read_only=True)
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Contact
-        fields = ['user_login', 'user', 'type', 'value']
+        fields = ['type', 'value']
 
     def validate(self, value):
         contact_type = value.get('type')
@@ -225,3 +224,31 @@ class ProductListSerializer(serializers.Serializer):
     value = serializers.CharField()
     price = serializers.DecimalField(max_digits=12, decimal_places=2, source='product_info__price')
     quantity = serializers.IntegerField(source='product_info__quantity')
+
+
+class DeliveryAddressSerializer(serializers.ModelSerializer):
+    """
+    Serializer for contacts: view, add, delete
+    """
+
+    class Meta:
+        model = DeliveryAddress
+        fields = ['city', 'street', 'building', 'block', 'structure', 'apartment']
+
+
+class UserDeliveryDetailsSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    contacts = ContactSerializer(source='contact_set', many=True, read_only=True)
+    delivery_address = DeliveryAddressSerializer(source='deliveryaddress_set', many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['user', 'contacts', 'delivery_address']
+
+    def get_user(self, obj):
+        user = [obj.first_name]
+        if obj.middle_name:
+            user.append(obj.middle_name)
+        user.append(obj.last_name)
+
+        return ' '.join(user)
