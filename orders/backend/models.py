@@ -48,8 +48,9 @@ class User(AbstractUser):
     User model
     """
 
-    name = models.CharField(max_length=50, blank=False)
-    lastname= models.CharField(max_length=50, blank=False)
+    first_name = models.CharField(max_length=50, blank=False)
+    middle_name = models.CharField(max_length=50, blank=True, null=True)
+    last_name= models.CharField(max_length=50, blank=False)
     login = models.EmailField(unique=True, blank=False, null=False)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -57,7 +58,7 @@ class User(AbstractUser):
     username = None
 
     USERNAME_FIELD = 'login'
-    REQUIRED_FIELDS = ['name', 'lastname']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = UserManager()
 
@@ -66,7 +67,7 @@ class User(AbstractUser):
         verbose_name_plural = 'Users'
 
     def __str__(self):
-        return f'{self.name} {self.lastname}'
+        return f'{self.first_name} {self.last_name}'
 
 
 class Shop(models.Model):
@@ -296,3 +297,57 @@ class Contact(models.Model):
 
     def __str__(self):
         return f'{self.user}: {self.type} - {self.value}'
+
+
+class DeliveryAddress(models.Model):
+    """
+    User delivery address model
+    """
+
+    city = models.CharField(max_length=50, blank=False, null=False)
+    street = models.CharField(max_length=100, blank=False, null=False)
+    building = models.CharField(max_length=10, blank=False, null=False)
+    block = models.CharField(max_length=10, blank=True, null=True)
+    structure = models.CharField(max_length=10, blank=True, null=True)
+    apartment = models.PositiveSmallIntegerField(blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
+
+    objects = models.Manager()
+
+    def clean(self):
+        super().clean()
+        if not self.city:
+            raise ValidationError('City must be provided')
+        if not self.street:
+            raise ValidationError('Street must be provided')
+
+        if not self.building:
+            raise ValidationError('Building number must be provided')
+        else:
+            if not re.match(r'^[a-zA-Z0-9]+$', self.building):
+                raise ValidationError('Building number is invalid')
+
+        if self.block:
+            if not re.match(r'^[a-zA-Z0-9]+$', self.block):
+                raise ValidationError('Block number is invalid')
+
+        if self.structure:
+            if not re.match(r'^[a-zA-Z0-9]+$', self.structure):
+                raise ValidationError('Structure number is invalid')
+
+
+    class Meta:
+        verbose_name = 'User delivery address'
+        verbose_name_plural = 'Users delivery addresses'
+
+    def __str__(self):
+        address = [self.city, self.street, self.building]
+
+        if self.block:
+            address.append(self.block)
+        if self.structure:
+            address.append(self.structure)
+        if self.apartment:
+            address.append(str(self.apartment))
+
+        return ', '.join(address)

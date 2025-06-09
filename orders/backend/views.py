@@ -5,16 +5,16 @@ from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, filters, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import ProductListFilter
 from .models import User, Shop, Category, Model, ProductInfo, Parameter, ProductParameter, Order, OrderItem, Contact
 from .serializers import UserSerializer, ShopSerializer, CategorySerializer, ModelSerializer, ProductInfoSerializer, \
     ParameterSerializer, ProductParameterSerializer, OrderSerializer, OrderItemSerializer, ContactSerializer, \
-    ProductListSerializer, CartContainsSerializer
+    ProductListSerializer, CartContainsSerializer, DeliveryAddressSerializer, UserDeliveryDetailsSerializer
 
 
 class UserViewSet(ModelViewSet):
@@ -170,3 +170,16 @@ class CartContainsViewSet(ModelViewSet):
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+
+class DeliveryAddressViewSet(ModelViewSet):
+    serializer_class = DeliveryAddressSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class UserDeliveryDetailsViewSet(ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserDeliveryDetailsSerializer
+    permission_classes = [IsAdminUser]
+
+
