@@ -31,8 +31,39 @@ class ProductParameterAdmin(admin.ModelAdmin):
     list_display = ('product_info', 'parameter', 'value', )
 
 
+from django import forms
+from django.contrib import admin
+
+class OrderAdminForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        user = None
+
+        if self.instance and self.instance.pk:
+            user = self.instance.user
+        else:
+            data = self.data or {}
+            user_id = data.get('user') or data.get('user_id')
+            if user_id:
+                try:
+                    user = User.objects.get(pk=user_id)
+                except User.DoesNotExist:
+                    user = None
+
+        if user:
+            self.fields['delivery_address'].queryset = DeliveryAddress.objects.filter(user=user)
+        else:
+            self.fields['delivery_address'].queryset = DeliveryAddress.objects.none()
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    form = OrderAdminForm
     list_display = ('user', 'created_at', 'status', 'order_total', )
 
 
