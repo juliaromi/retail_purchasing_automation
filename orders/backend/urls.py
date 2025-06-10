@@ -3,7 +3,7 @@ from django.urls import path, include
 
 from .views import (UserViewSet, ShopViewSet, CategoryViewSet, ModelViewSet, ProductInfoViewSet,
                     ParameterViewSet, ProductParameterViewSet, OrderViewSet, OrderItemViewSet, ContactViewSet,
-                    ProductListViewSet, CartContainsViewSet, UserDeliveryDetailsViewSet)
+                    ProductListViewSet, CartContainsViewSet, UserDeliveryDetailsViewSet, DeliveryAddressViewSet)
 
 router = DefaultRouter()
 router.register('users', UserViewSet)
@@ -15,10 +15,11 @@ router.register('parameter_names', ParameterViewSet)
 router.register('product_parameters', ProductParameterViewSet)
 router.register('orders', OrderViewSet)
 router.register('order_items', OrderItemViewSet)
-router.register('contacts', ContactViewSet)
+router.register('contacts', ContactViewSet, basename='contact')
 router.register('product_list', ProductListViewSet)
 router.register('cart_contains', CartContainsViewSet)
 router.register('user-delivery-details', UserDeliveryDetailsViewSet)
+router.register('delivery-address', DeliveryAddressViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

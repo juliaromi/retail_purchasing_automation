@@ -5,13 +5,15 @@ from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, filters, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import ProductListFilter
-from .models import User, Shop, Category, Model, ProductInfo, Parameter, ProductParameter, Order, OrderItem, Contact
+from .models import User, Shop, Category, Model, ProductInfo, Parameter, ProductParameter, Order, OrderItem, Contact, \
+    DeliveryAddress
 from .serializers import UserSerializer, ShopSerializer, CategorySerializer, ModelSerializer, ProductInfoSerializer, \
     ParameterSerializer, ProductParameterSerializer, OrderSerializer, OrderItemSerializer, ContactSerializer, \
     ProductListSerializer, CartContainsSerializer, DeliveryAddressSerializer, UserDeliveryDetailsSerializer
@@ -79,8 +81,26 @@ class OrderItemViewSet(ModelViewSet):
 
 
 class ContactViewSet(ModelViewSet):
-    queryset = Contact.objects.all()
     serializer_class = ContactSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Contact.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        if serializer.instance.user == self.request.user:
+            serializer.save()
+        else:
+            raise PermissionDenied('No permission to edit contacts')
+
+    def perform_destroy(self, instance):
+        if instance.user == self.request.user:
+            instance.delete()
+        else:
+            raise PermissionDenied('No permission to delete contacts')
 
 
 class ProductListViewSet(ModelViewSet):
@@ -175,6 +195,24 @@ class CartContainsViewSet(ModelViewSet):
 class DeliveryAddressViewSet(ModelViewSet):
     serializer_class = DeliveryAddressSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return DeliveryAddress.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        if serializer.instance.user == self.request.user:
+            serializer.save()
+        else:
+            raise PermissionDenied('No permission to edit delivery address')
+
+    def perform_destroy(self, instance):
+        if instance.user == self.request.user:
+            instance.delete()
+        else:
+            raise PermissionDenied('No permission to delete delivery address')
 
 
 class UserDeliveryDetailsViewSet(ReadOnlyModelViewSet):
