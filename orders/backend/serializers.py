@@ -194,21 +194,30 @@ class ContactSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Contact
-        fields = ['type', 'value']
+        fields = ['id', 'type', 'value']
 
-    def validate(self, value):
-        contact_type = value.get('type')
-        contact_value = value.get('value')
-        if Contact.objects.filter(type=contact_type,
-                                  value=contact_value).exists():
-            raise serializers.ValidationError('The contact is linked to another user’s account')
+    def validate(self, attrs):
+        contact_type = attrs.get('type')
+        contact_value = attrs.get('value')
+
+        if not contact_type:
+            raise serializers.ValidationError("Contact type is required")
+        if not contact_value:
+            raise serializers.ValidationError("Contact value is required")
+
+        existing = Contact.objects.filter(type=contact_type, value=contact_value)
+        if self.instance:
+            existing = existing.exclude(pk=self.instance.pk)
+        if existing.exists():
+            raise serializers.ValidationError('The contact is already linked')
+
         if contact_type == 'PHONE':
             if not re.match(r'^[+8]\d{10,11}$', contact_value):
                 raise serializers.ValidationError('Phone number is invalid')
         elif contact_type == 'EMAIL':
             if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$', contact_value):
                 raise serializers.ValidationError('Email is invalid')
-        return value
+        return attrs
 
 
 class ProductListSerializer(serializers.Serializer):
@@ -233,7 +242,7 @@ class DeliveryAddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DeliveryAddress
-        fields = ['city', 'street', 'building', 'block', 'structure', 'apartment']
+        fields = ['id', 'city', 'street', 'building', 'block', 'structure', 'apartment']
 
 
 class UserDeliveryDetailsSerializer(serializers.ModelSerializer):
