@@ -1,9 +1,10 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.backends import AllowAllUsersModelBackend
+from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import generics, filters, status
+from rest_framework import generics, filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
@@ -16,7 +17,8 @@ from .models import User, Shop, Category, Model, ProductInfo, Parameter, Product
     DeliveryAddress
 from .serializers import UserSerializer, ShopSerializer, CategorySerializer, ModelSerializer, ProductInfoSerializer, \
     ParameterSerializer, ProductParameterSerializer, OrderSerializer, OrderItemSerializer, ContactSerializer, \
-    ProductListSerializer, CartContainsSerializer, DeliveryAddressSerializer, UserDeliveryDetailsSerializer
+    ProductListSerializer, CartContainsSerializer, DeliveryAddressSerializer, UserDeliveryDetailsSerializer, \
+    ConfirmOrderSerializer
 
 
 class UserViewSet(ModelViewSet):
@@ -62,6 +64,7 @@ class ProductParameterViewSet(ModelViewSet):
 class OrderViewSet(ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user, status=Order.OrderStatus.CREATED)
@@ -70,7 +73,7 @@ class OrderViewSet(ModelViewSet):
     def user_cart(self, request):
         order = self.get_queryset().first()
         if not order:
-            return Response({'detail': 'cart is empty'}, status=404)
+            return Response({'detail': 'order is empty'}, status=404)
         serializer = self.get_serializer(order)
         return Response(serializer.data)
 
@@ -221,3 +224,32 @@ class UserDeliveryDetailsViewSet(ReadOnlyModelViewSet):
     permission_classes = [IsAdminUser]
 
 
+class OrderConfirmationViewSet(viewsets.ViewSet):
+    """
+    ViewSet for confirming an order
+    """
+
+    @action(detail=False, methods=['post'], url_path='confirm-order')
+    def confirm_order(self, request):
+        serializer = ConfirmOrderSerializer(data=request.data, context={'request': request})
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        order = serializer.validated_data['order']
+        contact = serializer.validated_data['contact']
+
+        if contact.type == 'EMAIL':
+            send_mail(
+                'Order Confirmation',
+                f'Order {order.id} has been confirmed.',
+                'shop_account@gmail.com',
+                [contact.value],
+                fail_silently=False,
+            )
+        elif contact.type == 'PHONE':
+            print(f'Send SMS to {contact.value}: Order {order.id} confirmed.')
+
+        order.status = Order.OrderStatus.CONFIRMED
+        order.save()
+
+        return Response({'message': 'Order confirmed'}, status=200)

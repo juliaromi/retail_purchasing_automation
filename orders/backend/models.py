@@ -200,13 +200,102 @@ class ProductParameter(models.Model):
         return f'{self.product_info.product_name} has {self.parameter.name} with {self.value} value'
 
 
+class Contact(models.Model):
+    """
+    User contact model
+    """
+
+    TYPES = [
+        ('PHONE', 'phone number'),
+        ('EMAIL', 'email'),
+    ]
+
+    type = models.CharField(max_length=5, choices=TYPES, blank=False, null=False, default='EMAIL')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
+    value = models.CharField(blank=False, null=False)
+
+    objects = models.Manager()
+
+    def clean(self):
+        super().clean()
+        if self.type == 'PHONE':
+            if not re.match(r'^[+8]\d{10,11}$', self.value):
+                raise ValidationError('Phone number is invalid')
+        else:
+            if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$', self.value):
+                raise ValidationError('Email is invalid')
+
+
+    class Meta:
+        verbose_name = 'Contact'
+        verbose_name_plural = 'Contacts'
+
+    def __str__(self):
+        return f'{self.user}: {self.type} - {self.value}'
+
+
+class DeliveryAddress(models.Model):
+    """
+    User delivery address model
+    """
+
+    city = models.CharField(max_length=50, blank=False, null=False)
+    street = models.CharField(max_length=100, blank=False, null=False)
+    building = models.CharField(max_length=10, blank=False, null=False)
+    block = models.CharField(max_length=10, blank=True, null=True)
+    structure = models.CharField(max_length=10, blank=True, null=True)
+    apartment = models.PositiveSmallIntegerField(blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False, related_name='delivery_address')
+
+    objects = models.Manager()
+
+    def clean(self):
+        super().clean()
+        if not self.city:
+            raise ValidationError('City must be provided')
+        if not self.street:
+            raise ValidationError('Street must be provided')
+
+        if not self.building:
+            raise ValidationError('Building number must be provided')
+        else:
+            if not re.match(r'^[a-zA-Z0-9]+$', self.building):
+                raise ValidationError('Building number is invalid')
+
+        if self.block:
+            if not re.match(r'^[a-zA-Z0-9]+$', self.block):
+                raise ValidationError('Block number is invalid')
+
+        if self.structure:
+            if not re.match(r'^[a-zA-Z0-9]+$', self.structure):
+                raise ValidationError('Structure number is invalid')
+
+
+    class Meta:
+        verbose_name = 'User delivery address'
+        verbose_name_plural = 'Users delivery addresses'
+
+    def __str__(self):
+        address = [self.city, self.street, self.building]
+
+        if self.block:
+            address.append(self.block)
+        if self.structure:
+            address.append(self.structure)
+        if self.apartment:
+            address.append(str(self.apartment))
+
+        return ', '.join(address)
+
+
 class Order(models.Model):
     """
     Order model
     """
 
     class OrderStatus(models.IntegerChoices):
-        CREATED = 1
+        CREATED = 0
+        CONFIRMED = 1
         PAID = 2
         PROCESSING = 3
         DISPATCHED = 4
@@ -216,7 +305,9 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    status =models.IntegerField(choices=OrderStatus, default=1, blank=False)
+    status = models.IntegerField(choices=OrderStatus, default=0, blank=False)
+    delivery_address = models.ForeignKey(DeliveryAddress, on_delete=models.SET_NULL, blank=True, null=True,
+                                         related_name='orders')
 
     objects = models.Manager()
 
@@ -264,90 +355,3 @@ class OrderItem(models.Model):
                 f'order created at {self.order.created_at}, '
                 f'from {self.shop.name} shop, '
                 f'quantity {self.quantity} pcs')
-
-class Contact(models.Model):
-    """
-    User contact model
-    """
-
-    TYPES = [
-        ('PHONE', 'phone number'),
-        ('EMAIL', 'email'),
-    ]
-
-    type = models.CharField(max_length=5, choices=TYPES, blank=False, null=False, default='EMAIL')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
-    value = models.CharField(blank=False, null=False)
-
-    objects = models.Manager()
-
-    def clean(self):
-        super().clean()
-        if self.type == 'PHONE':
-            if not re.match(r'^[+8]\d{10,11}$', self.value):
-                raise ValidationError('Phone number is invalid')
-        else:
-            if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$', self.value):
-                raise ValidationError('Email is invalid')
-
-
-    class Meta:
-        verbose_name = 'Contact'
-        verbose_name_plural = 'Contacts'
-
-    def __str__(self):
-        return f'{self.user}: {self.type} - {self.value}'
-
-
-class DeliveryAddress(models.Model):
-    """
-    User delivery address model
-    """
-
-    city = models.CharField(max_length=50, blank=False, null=False)
-    street = models.CharField(max_length=100, blank=False, null=False)
-    building = models.CharField(max_length=10, blank=False, null=False)
-    block = models.CharField(max_length=10, blank=True, null=True)
-    structure = models.CharField(max_length=10, blank=True, null=True)
-    apartment = models.PositiveSmallIntegerField(blank=True, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
-
-    objects = models.Manager()
-
-    def clean(self):
-        super().clean()
-        if not self.city:
-            raise ValidationError('City must be provided')
-        if not self.street:
-            raise ValidationError('Street must be provided')
-
-        if not self.building:
-            raise ValidationError('Building number must be provided')
-        else:
-            if not re.match(r'^[a-zA-Z0-9]+$', self.building):
-                raise ValidationError('Building number is invalid')
-
-        if self.block:
-            if not re.match(r'^[a-zA-Z0-9]+$', self.block):
-                raise ValidationError('Block number is invalid')
-
-        if self.structure:
-            if not re.match(r'^[a-zA-Z0-9]+$', self.structure):
-                raise ValidationError('Structure number is invalid')
-
-
-    class Meta:
-        verbose_name = 'User delivery address'
-        verbose_name_plural = 'Users delivery addresses'
-
-    def __str__(self):
-        address = [self.city, self.street, self.building]
-
-        if self.block:
-            address.append(self.block)
-        if self.structure:
-            address.append(self.structure)
-        if self.apartment:
-            address.append(str(self.apartment))
-
-        return ', '.join(address)

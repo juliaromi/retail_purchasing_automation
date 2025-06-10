@@ -162,14 +162,26 @@ class OrderSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     items = CartContainsSerializer(source='orderitem_set', many=True, read_only=True)
     order_total = serializers.SerializerMethodField()
+    delivery_address = serializers.PrimaryKeyRelatedField(queryset=DeliveryAddress.objects.none())
 
     def get_order_total(self, obj):
         return obj.order_total
 
     class Meta:
         model = Order
-        fields = ['user_login', 'user', 'created_at', 'status', 'items', 'order_total']
+        fields = ['user_login', 'user', 'created_at', 'status', 'items', 'order_total', 'delivery_address']
         read_only_fields = ['created_at', 'items', 'order_total']
+
+    def validate(self, data):
+        user = data.get('user') or self.instance.user
+        delivery_address = data.get('delivery_address')
+        if delivery_address and delivery_address.user != user:
+            raise serializers.ValidationError('Delivery address must belong to user')
+        return data
+
+
+
+
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -261,3 +273,25 @@ class UserDeliveryDetailsSerializer(serializers.ModelSerializer):
         user.append(obj.last_name)
 
         return ' '.join(user)
+
+
+class ConfirmOrderSerializer(serializers.Serializer):
+    order_id = serializers.IntegerField()
+    contact_id = serializers.IntegerField()
+
+    def validate(self, data):
+        user = self.context.get('request').user
+        order = Order.objects.filter(id=data.get('order_id'), user=user, status=Order.OrderStatus.CREATED).first()
+        if not order:
+            raise serializers.ValidationError('Order not found')
+
+        if not order.delivery_address:
+            raise serializers.ValidationError('Delivery address is required')
+
+        contact = Contact.objects.filter(id=data.get('contact_id'), user=user).first()
+        if not contact:
+            raise serializers.ValidationError('Contact not found')
+
+        data['order'] = order
+        data['contact'] = contact
+        return data
