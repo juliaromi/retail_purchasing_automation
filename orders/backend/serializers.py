@@ -8,11 +8,21 @@ from .models import User, Shop, Category, Model, ProductInfo, Parameter, Product
 
 class UserSerializer(serializers.ModelSerializer):
     """
-    User serializer
+    User model serializer with password handling and data validation.
     """
+
     class Meta:
         model = User
-        fields = ['first_name', 'middle_name', 'last_name', 'login', 'password', 'is_staff', 'is_superuser', 'created_at']
+        fields = [
+            'first_name',
+            'middle_name',
+            'last_name',
+            'login',
+            'password',
+            'is_staff',
+            'is_superuser',
+            'created_at'
+        ]
         read_only_fields = ['created_at', 'is_staff', 'is_superuser']
         extra_kwargs = {'password': {'write_only': True}}
 
@@ -39,6 +49,19 @@ class UserSerializer(serializers.ModelSerializer):
         instance.set_password(password)
         instance.save()
         return instance
+
+
+class UserRegistrationResponseSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user registration responses.
+    Designed specifically for API responses after successful registration.
+    Excludes sensitive fields and provides only safe user data.
+    """
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'login', 'created_at']
+        read_only_fields = fields
 
 
 class ShopSerializer(serializers.ModelSerializer):
