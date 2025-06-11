@@ -18,7 +18,7 @@ from .models import User, Shop, Category, Model, ProductInfo, Parameter, Product
 from .serializers import UserSerializer, ShopSerializer, CategorySerializer, ModelSerializer, ProductInfoSerializer, \
     ParameterSerializer, ProductParameterSerializer, OrderSerializer, OrderItemSerializer, ContactSerializer, \
     ProductListSerializer, CartContainsSerializer, DeliveryAddressSerializer, UserDeliveryDetailsSerializer, \
-    ConfirmOrderSerializer
+    ConfirmOrderSerializer, OrderHistorySerializer
 
 
 class UserViewSet(ModelViewSet):
@@ -66,15 +66,26 @@ class OrderViewSet(ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_serializer_class(self):
+        if self.action == 'history':
+            return OrderHistorySerializer
+        return OrderSerializer
+
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user, status=Order.OrderStatus.CREATED)
 
-    @action(detail=False, methods=['get'], url_path='user_cart')
+    @action(detail=False, methods=['get'], url_path='user-cart')
     def user_cart(self, request):
         order = self.get_queryset().first()
         if not order:
             return Response({'detail': 'order is empty'}, status=404)
         serializer = self.get_serializer(order)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='history')
+    def history(self, request):
+        orders = Order.objects.filter(user=request.user).order_by('-created_at')
+        serializer = self.get_serializer(orders, many=True)
         return Response(serializer.data)
 
 

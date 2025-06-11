@@ -180,8 +180,22 @@ class OrderSerializer(serializers.ModelSerializer):
         return data
 
 
+class OrderHistorySerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    order_total = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
+    def get_order_total(self, obj):
+        return obj.order_total
 
+    def get_status(self, obj):
+        return obj.OrderStatus(obj.status).name.capitalize()
+
+    class Meta:
+        model = Order
+        fields = ['id', 'created_at', 'order_total', 'status']
+        read_only_fields = fields
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
