@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.authtoken.views import obtain_auth_token
 
-from backend.views import RegisterView, ProductListViewSet
+from backend.views import RegisterView
 
 urlpatterns = [
     path('admin/', admin.site.urls),

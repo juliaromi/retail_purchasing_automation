@@ -22,8 +22,14 @@ from .serializers import UserSerializer, ShopSerializer, CategorySerializer, Mod
 
 
 class UserViewSet(ModelViewSet):
+    """
+    CRUD API for user management.
+    Requires admin privileges (IsAdminUser).
+    """
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
 
 
 class RegisterView(generics.CreateAPIView):

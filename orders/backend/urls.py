@@ -7,7 +7,7 @@ from .views import (UserViewSet, ShopViewSet, CategoryViewSet, ModelViewSet, Pro
                     OrderConfirmationViewSet)
 
 router = DefaultRouter()
-router.register('users', UserViewSet)
+router.register('users', UserViewSet, basename='users')
 router.register('shops', ShopViewSet)
 router.register('categories', CategoryViewSet)
 router.register('models', ModelViewSet)
@@ -19,7 +19,7 @@ router.register('order_items', OrderItemViewSet)
 router.register('contacts', ContactViewSet, basename='contact')
 router.register('product_list', ProductListViewSet)
 router.register('cart_contains', CartContainsViewSet)
-router.register('user-delivery-details', UserDeliveryDetailsViewSet)
+router.register('user-delivery-details', UserDeliveryDetailsViewSet, basename='user-delivery-details')
 router.register('delivery-address', DeliveryAddressViewSet)
 router.register('order', OrderConfirmationViewSet, basename='order-confirmation')
 
