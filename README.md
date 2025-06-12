@@ -5,7 +5,7 @@ Develop and configure a retail purchasing automation system, including data mode
 
 ### Application Overview
 The app exclusively uses API requests for all interactions.
-
+  
 ### Service Description  
 The service enables users to order products from multiple stores. Product catalogs, pricing, and stock information are loaded from files in a standardized format.
 
@@ -13,4 +13,4 @@ Users can compile an order (shopping cart) by adding products from different sto
 
 After confirming the order on the checkout page, the order is saved in the database with the status "Created".
 
-When the order status changes to "Confirmed", the user receives an email or phone notification about the update.  
+When the order status changes to "Confirmed", the user receives an email or phone notification about the update. 
