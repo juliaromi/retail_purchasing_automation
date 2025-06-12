@@ -5,3 +5,4 @@ Develop and configure a retail purchasing automation system, including data mode
 
 ### Application Overview
 The app exclusively uses API requests for all interactions.
+

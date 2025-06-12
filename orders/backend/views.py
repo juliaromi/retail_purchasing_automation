@@ -33,6 +33,10 @@ class UserViewSet(ModelViewSet):
 
 
 class RegisterView(generics.CreateAPIView):
+    """
+    Implementation of an endpoint for user registration via POST request
+    """
+
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
