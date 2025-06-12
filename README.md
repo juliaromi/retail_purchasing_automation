@@ -13,4 +13,4 @@ Users can compile an order (shopping cart) by adding products from different sto
 
 After confirming the order on the checkout page, the order is saved in the database with the status "Created".
 
-When the order status changes to "Confirmed", the user receives an email or phone notification about the update. 
+When the order status changes to "Confirmed", the user receives an email or phone notification about the update.   
