@@ -1,5 +1,8 @@
 import pytest
+from django.core.management import call_command
 from rest_framework.exceptions import ValidationError
+
+from backend.management.commands.parse_data import Command
 
 
 @pytest.fixture
@@ -16,7 +19,9 @@ def validate_response_dict():
             return True
         except ValidationError as e:
             pytest.fail(f'Invalid response data: {e}')
+
     return wrapper
+
 
 @pytest.fixture
 def validate_response_list():
@@ -32,4 +37,15 @@ def validate_response_list():
             return True
         except ValidationError as e:
             pytest.fail(f'Invalid response data: {e}')
+
     return wrapper
+
+
+@pytest.fixture
+def load_test_data(django_db_blocker):
+    with django_db_blocker.unblock():
+        call_command('flush', '--noinput')
+        cmd = Command()
+        cmd.handle()
+    yield
+

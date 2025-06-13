@@ -271,17 +271,19 @@ class ContactSerializer(serializers.ModelSerializer):
 
 class ProductListSerializer(serializers.Serializer):
     """
-    Serializer for displaying a list of products
+    Serializes product data with grouped parameters
     """
 
     name = serializers.CharField(source='product_info__product_name')
     model = serializers.CharField(source='product_info__model__name')
     category = serializers.CharField(source='product_info__model__category__name')
     shop = serializers.CharField(source='product_info__shop__name')
-    parameter = serializers.CharField(source='parameter__name')
-    value = serializers.CharField()
+    parameter = serializers.SerializerMethodField()
     price = serializers.DecimalField(max_digits=12, decimal_places=2, source='product_info__price')
     quantity = serializers.IntegerField(source='product_info__quantity')
+
+    def get_parameter(self, obj):
+        return self.context.get('parameter_dict', {}).get(obj['product_info__product_name'], {})
 
 
 class DeliveryAddressSerializer(serializers.ModelSerializer):
