@@ -64,6 +64,57 @@ class UserRegistrationResponseSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class ProductListSerializer(serializers.Serializer):
+    """
+    Serializes list of products data with grouped parameters
+    """
+
+    name = serializers.CharField(source='product_info__product_name')
+    model = serializers.CharField(source='product_info__model__name')
+    category = serializers.CharField(source='product_info__model__category__name')
+    shop = serializers.CharField(source='product_info__shop__name')
+    parameter = serializers.SerializerMethodField()
+    price = serializers.DecimalField(max_digits=12, decimal_places=2, source='product_info__price')
+    quantity = serializers.IntegerField(source='product_info__quantity')
+
+    def get_parameter(self, obj):
+        return self.context.get('parameter_dict', {}).get(obj['product_info__product_name'], {})
+
+
+class CertainProductSerializer(serializers.Serializer):
+    """
+    Serializes certain product data with grouped parameters
+    """
+
+    product_name = serializers.CharField()
+    quantity = serializers.IntegerField()
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    shop = serializers.CharField()
+    model = serializers.CharField()
+    category = serializers.CharField()
+    parameters = serializers.DictField()
+
+
+class CartContainsSerializer(serializers.ModelSerializer):
+    """
+    Serializer for managing user's cart contains
+    """
+
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(source='product.product_name', read_only=True)
+    shop = serializers.CharField(source='shop.name', read_only=True)
+    price = serializers.DecimalField(max_digits=12, decimal_places=2, source='product.price', read_only=True)
+    quantity = serializers.IntegerField()
+    total_sum = serializers.SerializerMethodField()
+
+    def get_total_sum(self, obj):
+        return obj.product.price * obj.quantity
+
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'name', 'shop', 'price', 'quantity', 'total_sum']
+
+
 class ShopSerializer(serializers.ModelSerializer):
     """
     Shop serializer
@@ -158,25 +209,6 @@ class ProductParameterSerializer(serializers.ModelSerializer):
         return value
 
 
-class CartContainsSerializer(serializers.ModelSerializer):
-    """
-    Serializer for displaying user's cart contains
-    """
-
-    name = serializers.CharField(source='product.product_name', read_only=True)
-    shop = serializers.CharField(source='shop.name', read_only=True)
-    price = serializers.DecimalField(max_digits=12, decimal_places=2, source='product.price', read_only=True)
-    quantity = serializers.IntegerField()
-    total_sum = serializers.SerializerMethodField()
-
-    def get_total_sum(self, obj):
-        return obj.product.price * obj.quantity
-
-    class Meta:
-        model = OrderItem
-        fields = ['name', 'shop', 'price', 'quantity', 'total_sum']
-
-
 class OrderSerializer(serializers.ModelSerializer):
     """
     Order serializer
@@ -267,37 +299,6 @@ class ContactSerializer(serializers.ModelSerializer):
             if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$', contact_value):
                 raise serializers.ValidationError('Email is invalid')
         return attrs
-
-
-class ProductListSerializer(serializers.Serializer):
-    """
-    Serializes list of products data with grouped parameters
-    """
-
-    name = serializers.CharField(source='product_info__product_name')
-    model = serializers.CharField(source='product_info__model__name')
-    category = serializers.CharField(source='product_info__model__category__name')
-    shop = serializers.CharField(source='product_info__shop__name')
-    parameter = serializers.SerializerMethodField()
-    price = serializers.DecimalField(max_digits=12, decimal_places=2, source='product_info__price')
-    quantity = serializers.IntegerField(source='product_info__quantity')
-
-    def get_parameter(self, obj):
-        return self.context.get('parameter_dict', {}).get(obj['product_info__product_name'], {})
-
-
-class CertainProductSerializer(serializers.Serializer):
-    """
-    Serializes certain product data with grouped parameters
-    """
-
-    product_name = serializers.CharField()
-    quantity = serializers.IntegerField()
-    price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    shop = serializers.CharField()
-    model = serializers.CharField()
-    category = serializers.CharField()
-    parameters = serializers.DictField()
 
 
 class DeliveryAddressSerializer(serializers.ModelSerializer):
