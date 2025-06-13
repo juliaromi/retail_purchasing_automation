@@ -20,7 +20,7 @@ from .models import User, Shop, Category, Model, ProductInfo, Parameter, Product
 from .serializers import UserSerializer, ShopSerializer, CategorySerializer, ModelSerializer, ProductInfoSerializer, \
     ParameterSerializer, ProductParameterSerializer, OrderSerializer, OrderItemSerializer, ContactSerializer, \
     ProductListSerializer, CartContainsSerializer, DeliveryAddressSerializer, UserDeliveryDetailsSerializer, \
-    ConfirmOrderSerializer, OrderHistorySerializer
+    ConfirmOrderSerializer, OrderHistorySerializer, CertainProductSerializer
 
 
 class UserViewSet(ModelViewSet):
@@ -58,7 +58,7 @@ class ModelViewSet(ModelViewSet):
     serializer_class = ModelSerializer
 
 
-class ProductInfoViewSet(ModelViewSet):
+class ProductInfoViewSet(ReadOnlyModelViewSet):
     queryset = ProductInfo.objects.all()
     serializer_class = ProductInfoSerializer
 
@@ -150,6 +150,8 @@ class ProductListViewSet(ReadOnlyModelViewSet):
         'product_info__model__name',
         'product_info__model__category__name',
     ]
+    lookup_field = 'product_info__id'
+    lookup_url_kwarg = 'pk'
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -187,6 +189,37 @@ class ProductListViewSet(ReadOnlyModelViewSet):
             context={'parameter_dict': parameters_dict}
         )
 
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        product_info_id = self.kwargs.get(self.lookup_url_kwarg)
+
+        queryset = ProductParameter.objects.select_related(
+            'product_info__model__category',
+            'product_info__shop',
+            'parameter'
+        ).filter(product_info__id=product_info_id)
+
+        if not queryset.exists():
+            return Response({'detail': 'Not found'}, status=404)
+
+        first_item = queryset.first()
+
+        param_dict = {}
+        for param in queryset:
+            param_dict[param.parameter.name] = param.value
+
+        data = {
+             'product_name': first_item.product_info.product_name,
+            'quantity': first_item.product_info.quantity,
+            'price': first_item.product_info.price,
+            'shop': first_item.product_info.shop.name,
+            'model': first_item.product_info.model.name,
+            'category': first_item.product_info.model.category.name,
+            'parameters': param_dict
+        }
+
+        serializer = CertainProductSerializer(data)
         return Response(serializer.data)
 
 

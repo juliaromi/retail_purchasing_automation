@@ -271,7 +271,7 @@ class ContactSerializer(serializers.ModelSerializer):
 
 class ProductListSerializer(serializers.Serializer):
     """
-    Serializes product data with grouped parameters
+    Serializes list of products data with grouped parameters
     """
 
     name = serializers.CharField(source='product_info__product_name')
@@ -284,6 +284,20 @@ class ProductListSerializer(serializers.Serializer):
 
     def get_parameter(self, obj):
         return self.context.get('parameter_dict', {}).get(obj['product_info__product_name'], {})
+
+
+class CertainProductSerializer(serializers.Serializer):
+    """
+    Serializes certain product data with grouped parameters
+    """
+
+    product_name = serializers.CharField()
+    quantity = serializers.IntegerField()
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    shop = serializers.CharField()
+    model = serializers.CharField()
+    category = serializers.CharField()
+    parameters = serializers.DictField()
 
 
 class DeliveryAddressSerializer(serializers.ModelSerializer):
