@@ -3,7 +3,7 @@ from django.urls import path, include
 
 from .views import (UserViewSet, ShopViewSet, CategoryViewSet, ModelViewSet, ProductInfoViewSet,
                     ParameterViewSet, ProductParameterViewSet, OrderViewSet, OrderItemViewSet, ContactViewSet,
-                    ProductListViewSet, CartContainsViewSet, UserDeliveryDetailsViewSet, DeliveryAddressViewSet,
+                    ProductViewSet, CartContainsViewSet, UserDeliveryDetailsViewSet, DeliveryAddressViewSet,
                     OrderConfirmationViewSet)
 
 router = DefaultRouter()
@@ -17,8 +17,8 @@ router.register('product_parameters', ProductParameterViewSet)
 router.register('orders', OrderViewSet)
 router.register('order_items', OrderItemViewSet)
 router.register('contacts', ContactViewSet, basename='contact')
-router.register('product-list', ProductListViewSet, basename='product-list')
-router.register('cart_contains', CartContainsViewSet)
+router.register('product-list', ProductViewSet, basename='product-list')
+router.register('cart-contains', CartContainsViewSet, basename='cart-contains')
 router.register('user-delivery-details', UserDeliveryDetailsViewSet, basename='user-delivery-details')
 router.register('delivery-address', DeliveryAddressViewSet)
 router.register('order', OrderConfirmationViewSet, basename='order-confirmation')
