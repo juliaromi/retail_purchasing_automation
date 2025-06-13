@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
             #Loading store data
             shop_name: dict = data.get('shop')
-            shop = Shop.objects.create(name=shop_name)
+            shop, created = Shop.objects.get_or_create(name=shop_name)
             print(f'Shop {shop} uploaded')
 
             #Loading product category data

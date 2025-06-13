@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.backends import AllowAllUsersModelBackend
 from django.core.mail import send_mail
@@ -127,16 +129,16 @@ class ContactViewSet(ModelViewSet):
             raise PermissionDenied('No permission to delete contacts')
 
 
-class ProductListViewSet(ModelViewSet):
-    queryset = ProductParameter.objects.select_related('product_info__model__category', 'parameter').values(
-        'product_info__product_name',
-        'product_info__quantity',
-        'product_info__price',
-        'product_info__shop__name',
-        'product_info__model__name',
-        'product_info__model__category__name',
-        'parameter__name',
-        'value'
+class ProductListViewSet(ReadOnlyModelViewSet):
+    """
+    The API endpoint provides a list of products with details: name, quantity, price, shop, category, parameters.
+    Supports filtering and search. Read-only.
+    """
+
+    queryset = ProductParameter.objects.select_related(
+        'product_info__model__category',
+        'product_info__shop',
+        'parameter'
     )
     serializer_class = ProductListSerializer
 
@@ -148,6 +150,44 @@ class ProductListViewSet(ModelViewSet):
         'product_info__model__name',
         'product_info__model__category__name',
     ]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.values(
+            'product_info__product_name',
+            'product_info__quantity',
+            'product_info__price',
+            'product_info__shop__name',
+            'product_info__model__name',
+            'product_info__model__category__name',
+            'parameter__name',
+            'value'
+        )
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        parameters_dict = defaultdict(dict)
+        unique_products = []
+        seen_products = set()
+
+        for product in queryset:
+            product_name = product.get('product_info__product_name')
+            param_name = product.get('parameter__name')
+            param_value = product.get('value')
+            parameters_dict[product_name][param_name] = param_value
+
+            if product_name not in seen_products:
+                seen_products.add(product_name)
+                unique_products.append(product)
+
+        serializer = self.get_serializer(
+            unique_products,
+            many=True,
+            context={'parameter_dict': parameters_dict}
+        )
+
+        return Response(serializer.data)
 
 
 class CartContainsViewSet(ModelViewSet):
