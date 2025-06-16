@@ -20,7 +20,7 @@ router.register('contacts', ContactViewSet, basename='contact')
 router.register('product-list', ProductViewSet, basename='product-list')
 router.register('cart-contains', CartContainsViewSet, basename='cart-contains')
 router.register('user-delivery-details', UserDeliveryDetailsViewSet, basename='user-delivery-details')
-router.register('delivery-address', DeliveryAddressViewSet)
+router.register('delivery-address', DeliveryAddressViewSet, basename='delivery-address')
 router.register('order', OrderConfirmationViewSet, basename='order-confirmation')
 
 urlpatterns = [

@@ -115,6 +115,73 @@ class CartContainsSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'shop', 'price', 'quantity', 'total_sum']
 
 
+class DeliveryAddressSerializer(serializers.ModelSerializer):
+    """
+    Serializer for delivery addresses.
+    Used to view, create, delete delivery address records associated with authenticated user.
+    """
+
+    class Meta:
+        model = DeliveryAddress
+        fields = ['id', 'city', 'street', 'building', 'block', 'structure', 'apartment']
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    """
+    Serializer for validating and representing user contact information (phone or email)
+    """
+
+    class Meta:
+        model = Contact
+        fields = ['id', 'type', 'value']
+
+    def validate(self, attrs):
+        contact_type = attrs.get('type')
+        contact_value = attrs.get('value')
+
+        if not contact_type:
+            raise serializers.ValidationError("Contact type is required")
+        if not contact_value:
+            raise serializers.ValidationError("Contact value is required")
+
+        existing = Contact.objects.filter(type=contact_type, value=contact_value)
+        if self.instance:
+            existing = existing.exclude(pk=self.instance.pk)
+        if existing.exists():
+            raise serializers.ValidationError('The contact is already linked')
+
+        if contact_type == 'PHONE':
+            if not re.match(r'^[+8]\d{10,11}$', contact_value):
+                raise serializers.ValidationError('Phone number is invalid')
+        elif contact_type == 'EMAIL':
+            if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$', contact_value):
+                raise serializers.ValidationError('Email is invalid')
+        return attrs
+
+
+class UserDeliveryDetailsSerializer(serializers.ModelSerializer):
+    """
+    Serializer for displaying user delivery-related information.
+    Admin use and read-only.
+    """
+
+    user = serializers.SerializerMethodField()
+    contacts = ContactSerializer(source='contact_set', many=True, read_only=True)
+    delivery_address = DeliveryAddressSerializer(source='deliveryaddress_set', many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['user', 'contacts', 'delivery_address']
+
+    def get_user(self, obj):
+        user = [obj.first_name]
+        if obj.middle_name:
+            user.append(obj.middle_name)
+        user.append(obj.last_name)
+
+        return ' '.join(user)
+
+
 class ShopSerializer(serializers.ModelSerializer):
     """
     Shop serializer
@@ -266,67 +333,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['order', 'product', 'product_name', 'shop', 'shop_name', 'quantity']
-
-
-class ContactSerializer(serializers.ModelSerializer):
-    """
-    Contacts serializer
-    """
-
-    class Meta:
-        model = Contact
-        fields = ['id', 'type', 'value']
-
-    def validate(self, attrs):
-        contact_type = attrs.get('type')
-        contact_value = attrs.get('value')
-
-        if not contact_type:
-            raise serializers.ValidationError("Contact type is required")
-        if not contact_value:
-            raise serializers.ValidationError("Contact value is required")
-
-        existing = Contact.objects.filter(type=contact_type, value=contact_value)
-        if self.instance:
-            existing = existing.exclude(pk=self.instance.pk)
-        if existing.exists():
-            raise serializers.ValidationError('The contact is already linked')
-
-        if contact_type == 'PHONE':
-            if not re.match(r'^[+8]\d{10,11}$', contact_value):
-                raise serializers.ValidationError('Phone number is invalid')
-        elif contact_type == 'EMAIL':
-            if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$', contact_value):
-                raise serializers.ValidationError('Email is invalid')
-        return attrs
-
-
-class DeliveryAddressSerializer(serializers.ModelSerializer):
-    """
-    Serializer for contacts: view, add, delete
-    """
-
-    class Meta:
-        model = DeliveryAddress
-        fields = ['id', 'city', 'street', 'building', 'block', 'structure', 'apartment']
-
-
-class UserDeliveryDetailsSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
-    contacts = ContactSerializer(source='contact_set', many=True, read_only=True)
-    delivery_address = DeliveryAddressSerializer(source='deliveryaddress_set', many=True, read_only=True)
-
-    class Meta:
-        model = User
-        fields = ['user', 'contacts', 'delivery_address']
-
-    def get_user(self, obj):
-        user = [obj.first_name]
-        if obj.middle_name:
-            user.append(obj.middle_name)
-        user.append(obj.last_name)
-
-        return ' '.join(user)
 
 
 class ConfirmOrderSerializer(serializers.Serializer):

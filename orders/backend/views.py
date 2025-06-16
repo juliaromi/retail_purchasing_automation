@@ -253,6 +253,71 @@ class CartContainsViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class ContactViewSet(ModelViewSet):
+    """
+    API endpoint for creating, updating, and deleting contacts of the currently authenticated user
+    """
+
+    serializer_class = ContactSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Contact.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        if serializer.instance.user == self.request.user:
+            serializer.save()
+        else:
+            raise PermissionDenied('No permission to edit contacts')
+
+    def perform_destroy(self, instance):
+        if instance.user == self.request.user:
+            instance.delete()
+        else:
+            raise PermissionDenied('No permission to delete contacts')
+
+
+class DeliveryAddressViewSet(ModelViewSet):
+    """
+    API endpoint for creating, updating, and deleting the delivery address of the currently authenticated user
+    """
+
+    serializer_class = DeliveryAddressSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return DeliveryAddress.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        if serializer.instance.user == self.request.user:
+            serializer.save()
+        else:
+            raise PermissionDenied('No permission to edit delivery address')
+
+    def perform_destroy(self, instance):
+        if instance.user == self.request.user:
+            instance.delete()
+        else:
+            raise PermissionDenied('No permission to delete delivery address')
+
+
+class UserDeliveryDetailsViewSet(ReadOnlyModelViewSet):
+    """
+    Admin endpoint for viewing users' delivery address information
+    """
+
+    queryset = User.objects.all()
+    serializer_class = UserDeliveryDetailsSerializer
+    permission_classes = [IsAdminUser]
+
+
+
 class ShopViewSet(ModelViewSet):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
@@ -314,58 +379,6 @@ class OrderViewSet(ModelViewSet):
 class OrderItemViewSet(ModelViewSet):
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
-
-
-class ContactViewSet(ModelViewSet):
-    serializer_class = ContactSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Contact.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def perform_update(self, serializer):
-        if serializer.instance.user == self.request.user:
-            serializer.save()
-        else:
-            raise PermissionDenied('No permission to edit contacts')
-
-    def perform_destroy(self, instance):
-        if instance.user == self.request.user:
-            instance.delete()
-        else:
-            raise PermissionDenied('No permission to delete contacts')
-
-
-class DeliveryAddressViewSet(ModelViewSet):
-    serializer_class = DeliveryAddressSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return DeliveryAddress.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def perform_update(self, serializer):
-        if serializer.instance.user == self.request.user:
-            serializer.save()
-        else:
-            raise PermissionDenied('No permission to edit delivery address')
-
-    def perform_destroy(self, instance):
-        if instance.user == self.request.user:
-            instance.delete()
-        else:
-            raise PermissionDenied('No permission to delete delivery address')
-
-
-class UserDeliveryDetailsViewSet(ReadOnlyModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserDeliveryDetailsSerializer
-    permission_classes = [IsAdminUser]
 
 
 class OrderConfirmationViewSet(viewsets.ViewSet):
