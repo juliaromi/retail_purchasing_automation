@@ -37,3 +37,7 @@ The user does not need to be authorized in the system to view the list of produc
 ### Shop 
 The store has name and sometimes a website.
 
+### Category
+Categories have a name.  
+Categories are linked to stores via a many-to-many relationship. 
+Nested categories are not supported.
