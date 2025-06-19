@@ -14,14 +14,14 @@ router.register('models', ModelViewSet)
 router.register('products-info', ProductInfoViewSet)
 router.register('parameter_names', ParameterViewSet)
 router.register('product_parameters', ProductParameterViewSet)
-router.register('orders', OrderViewSet)
+router.register('orders', OrderViewSet, basename='orders')
 router.register('order_items', OrderItemViewSet)
 router.register('contacts', ContactViewSet, basename='contact')
 router.register('product-list', ProductViewSet, basename='product-list')
 router.register('cart-contains', CartContainsViewSet, basename='cart-contains')
 router.register('user-delivery-details', UserDeliveryDetailsViewSet, basename='user-delivery-details')
 router.register('delivery-address', DeliveryAddressViewSet, basename='delivery-address')
-router.register('order', OrderConfirmationViewSet, basename='order-confirmation')
+router.register('order-confirmation', OrderConfirmationViewSet, basename='order-confirmation')
 
 urlpatterns = [
     path('', include(router.urls)),

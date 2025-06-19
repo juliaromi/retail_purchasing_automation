@@ -1,4 +1,15 @@
-# Backend application for automating retail purchasing 
+# Backend application for automating retail purchasing  
+
+[Project Goal](#project-goal)  
+[Application Overview](#application-overview)  
+[Service Description](#service-description)  
+[Core entities](#core-entities) 
+* [User](#user)
+* [Shop](#shop)
+* [Category](#category)
+* [Model](#model)
+* [ProductInfo](#productinfo)
+* [Parameter](#parameter)
 
 ### Project Goal:  
 Develop and configure a retail purchasing automation system, including data modeling, product import features, and API view implementation.
@@ -28,16 +39,32 @@ When the order status changes to "Confirmed", the user receives an email or phon
 10. Order
 11. OrderItem
 
-### User 
+#### <ins> User </ins>  
 To place an order, the user must register in the system by entering first name, last name, 
 middle name (if available, optional field), username (the email address is used as the username), and password. 
 An administrator user has the right to create administrator and superuser accounts through the system’s admin panel.
 The user does not need to be authorized in the system to view the list of products.
 
-### Shop 
+#### <ins> Shop </ins>
 The store has name and sometimes a website.
 
-### Category
+#### <ins> Category </ins>
 Categories have a name.  
 Categories are linked to stores via a many-to-many relationship. 
 Nested categories are not supported.
+
+#### <ins> Model </ins>
+Product model has a name.  
+A "many-to-one" relationship between the current product model and the category it belongs to.
+
+#### <ins> ProductInfo </ins>
+Represents detailed information about a specific product offering in the stor, includes:
+- product name (display name for the item)
+- reference to a generic product model 
+- the shop offering the product
+- quantity available in stock
+- current selling price
+- recommended retail price (RRP)
+
+#### <ins> Parameter </ins>
+Parameter model has a name. 

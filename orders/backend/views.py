@@ -317,6 +317,76 @@ class UserDeliveryDetailsViewSet(ReadOnlyModelViewSet):
     permission_classes = [IsAdminUser]
 
 
+class OrderViewSet(ModelViewSet):
+    """
+    ViewSet for managing user orders
+    """
+
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user, status=Order.OrderStatus.CREATED)
+
+    def get_serializer_class(self):
+        if self.action == 'history':
+            return OrderHistorySerializer
+        return OrderSerializer
+
+    @action(detail=False, methods=['get'], url_path='user-cart')
+    def user_cart(self, request):
+        order = self.get_queryset().first()
+        if not order:
+            return Response({'detail': 'order is empty'}, status=404)
+        serializer = self.get_serializer(order)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='history')
+    def history(self, request):
+        orders = Order.objects.filter(user=request.user).order_by('-created_at')
+        serializer = self.get_serializer(orders, many=True)
+        return Response(serializer.data)
+
+
+class OrderConfirmationViewSet(viewsets.ViewSet):
+    """
+    ViewSet for confirming user orders
+    """
+
+    @action(detail=False, methods=['post'], url_path='confirm-order')
+    def confirm_order(self, request):
+        serializer = ConfirmOrderSerializer(data=request.data, context={'request': request})
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        order = serializer.validated_data['order']
+        contact = serializer.validated_data['contact']
+
+        if contact.type == 'EMAIL':
+            send_mail(
+                'Order Confirmation',
+                f'Order {order.id} has been confirmed.',
+                '',
+                [contact.value],
+                fail_silently=False,
+            )
+        elif contact.type == 'PHONE':
+            print(f'Send SMS to {contact.value}: Order {order.id} confirmed.')
+
+        admin_emails = User.objects.filter(is_staff=True).values_list('login', flat=True)
+        send_mail(
+            'Order Confirmation by User',
+            f'User {request.user.login} has been confirmed order {order.id}.',
+            '',
+            list(admin_emails),
+            fail_silently=False,
+        )
+
+        order.status = Order.OrderStatus.CONFIRMED
+        order.save()
+
+        return Response({'message': 'Order confirmed'}, status=200)
+
 
 class ShopViewSet(ModelViewSet):
     queryset = Shop.objects.all()
@@ -348,65 +418,6 @@ class ProductParameterViewSet(ModelViewSet):
     serializer_class = ProductParameterSerializer
 
 
-class OrderViewSet(ModelViewSet):
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.action == 'history':
-            return OrderHistorySerializer
-        return OrderSerializer
-
-    def get_queryset(self):
-        return Order.objects.filter(user=self.request.user, status=Order.OrderStatus.CREATED)
-
-    @action(detail=False, methods=['get'], url_path='user-cart')
-    def user_cart(self, request):
-        order = self.get_queryset().first()
-        if not order:
-            return Response({'detail': 'order is empty'}, status=404)
-        serializer = self.get_serializer(order)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=['get'], url_path='history')
-    def history(self, request):
-        orders = Order.objects.filter(user=request.user).order_by('-created_at')
-        serializer = self.get_serializer(orders, many=True)
-        return Response(serializer.data)
-
-
 class OrderItemViewSet(ModelViewSet):
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
-
-
-class OrderConfirmationViewSet(viewsets.ViewSet):
-    """
-    ViewSet for confirming an order
-    """
-
-    @action(detail=False, methods=['post'], url_path='confirm-order')
-    def confirm_order(self, request):
-        serializer = ConfirmOrderSerializer(data=request.data, context={'request': request})
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        order = serializer.validated_data['order']
-        contact = serializer.validated_data['contact']
-
-        if contact.type == 'EMAIL':
-            send_mail(
-                'Order Confirmation',
-                f'Order {order.id} has been confirmed.',
-                'shop_account@gmail.com',
-                [contact.value],
-                fail_silently=False,
-            )
-        elif contact.type == 'PHONE':
-            print(f'Send SMS to {contact.value}: Order {order.id} confirmed.')
-
-        order.status = Order.OrderStatus.CONFIRMED
-        order.save()
-
-        return Response({'message': 'Order confirmed'}, status=200)

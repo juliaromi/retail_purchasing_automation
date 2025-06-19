@@ -182,6 +182,76 @@ class UserDeliveryDetailsSerializer(serializers.ModelSerializer):
         return ' '.join(user)
 
 
+class OrderSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Order model
+    """
+
+    user_login = serializers.EmailField(source='user.login', read_only=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    items = CartContainsSerializer(source='orderitem_set', many=True, read_only=True)
+    order_total = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField(read_only=True)
+    status = serializers.IntegerField()
+
+
+    def get_order_total(self, obj):
+        return obj.order_total
+
+    class Meta:
+        model = Order
+        fields = ['user_login', 'user', 'created_at', 'status', 'items', 'order_total']
+        read_only_fields = fields
+
+
+class OrderHistorySerializer(serializers.ModelSerializer):
+    """
+    Serializer for displaying user's order history in a concise format
+    """
+
+    id = serializers.IntegerField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    order_total = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+
+    def get_order_total(self, obj):
+        return obj.order_total
+
+    def get_status(self, obj):
+        return obj.OrderStatus(obj.status).name.capitalize()
+
+    class Meta:
+        model = Order
+        fields = ['id', 'created_at', 'order_total', 'status']
+        read_only_fields = fields
+
+
+class ConfirmOrderSerializer(serializers.Serializer):
+    """
+    Serializer for validating order confirmation data
+    """
+
+    order_id = serializers.IntegerField()
+    contact_id = serializers.IntegerField()
+
+    def validate(self, data):
+        user = self.context.get('request').user
+        order = Order.objects.filter(id=data.get('order_id'), user=user, status=Order.OrderStatus.CREATED).first()
+        if not order:
+            raise serializers.ValidationError('Order not found')
+
+        if not order.delivery_address:
+            raise serializers.ValidationError('Delivery address is required')
+
+        contact = Contact.objects.filter(id=data.get('contact_id'), user=user).first()
+        if not contact:
+            raise serializers.ValidationError('Contact not found')
+
+        data['order'] = order
+        data['contact'] = contact
+        return data
+
+
 class ShopSerializer(serializers.ModelSerializer):
     """
     Shop serializer
@@ -276,50 +346,6 @@ class ProductParameterSerializer(serializers.ModelSerializer):
         return value
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    """
-    Order serializer
-    """
-    user_login = serializers.EmailField(source='user.login', read_only=True)
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    items = CartContainsSerializer(source='orderitem_set', many=True, read_only=True)
-    order_total = serializers.SerializerMethodField()
-    delivery_address = serializers.PrimaryKeyRelatedField(queryset=DeliveryAddress.objects.none())
-
-    def get_order_total(self, obj):
-        return obj.order_total
-
-    class Meta:
-        model = Order
-        fields = ['user_login', 'user', 'created_at', 'status', 'items', 'order_total', 'delivery_address']
-        read_only_fields = ['created_at', 'items', 'order_total']
-
-    def validate(self, data):
-        user = data.get('user') or self.instance.user
-        delivery_address = data.get('delivery_address')
-        if delivery_address and delivery_address.user != user:
-            raise serializers.ValidationError('Delivery address must belong to user')
-        return data
-
-
-class OrderHistorySerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    created_at = serializers.DateTimeField(read_only=True)
-    order_total = serializers.SerializerMethodField()
-    status = serializers.SerializerMethodField()
-
-    def get_order_total(self, obj):
-        return obj.order_total
-
-    def get_status(self, obj):
-        return obj.OrderStatus(obj.status).name.capitalize()
-
-    class Meta:
-        model = Order
-        fields = ['id', 'created_at', 'order_total', 'status']
-        read_only_fields = fields
-
-
 class OrderItemSerializer(serializers.ModelSerializer):
     """
     Order items serializer
@@ -333,25 +359,3 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['order', 'product', 'product_name', 'shop', 'shop_name', 'quantity']
-
-
-class ConfirmOrderSerializer(serializers.Serializer):
-    order_id = serializers.IntegerField()
-    contact_id = serializers.IntegerField()
-
-    def validate(self, data):
-        user = self.context.get('request').user
-        order = Order.objects.filter(id=data.get('order_id'), user=user, status=Order.OrderStatus.CREATED).first()
-        if not order:
-            raise serializers.ValidationError('Order not found')
-
-        if not order.delivery_address:
-            raise serializers.ValidationError('Delivery address is required')
-
-        contact = Contact.objects.filter(id=data.get('contact_id'), user=user).first()
-        if not contact:
-            raise serializers.ValidationError('Contact not found')
-
-        data['order'] = order
-        data['contact'] = contact
-        return data
