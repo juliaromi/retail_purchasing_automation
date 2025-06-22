@@ -3,13 +3,8 @@
 [Project Goal](#project-goal)  
 [Application Overview](#application-overview)  
 [Service Description](#service-description)  
-[Core entities](#core-entities) 
-* [User](#user)
-* [Shop](#shop)
-* [Category](#category)
-* [Model](#model)
-* [ProductInfo](#productinfo)
-* [Parameter](#parameter)
+[Core entities](#core-entities)
+  
 
 ### Project Goal:  
 Develop and configure a retail purchasing automation system, including data modeling, product import features, and API view implementation.
@@ -68,3 +63,20 @@ Represents detailed information about a specific product offering in the stor, i
 
 #### <ins> Parameter </ins>
 Parameter model has a name. 
+  
+#### <ins> ProductParameter </ins>  
+ProductParameter model contains parameter values of a specific product.
+  
+#### <ins> Contact </ins>  
+Contact model stores user contacts: either phone or email, according to the user's choice. 
+  
+#### <ins> DeliveryAddress </ins>  
+DeliveryAddress model stores information about user's delivery addresses. 
+The model contains the following fields: city, street, building, block, structure, apartment. 
+  
+#### <ins> Order </ins>  
+Order model contains information about user's order: order creation date, status and delivery address (a mandatory field for orders with status "Confirmed"). 
+  
+#### <ins> OrderItem </ins>  
+OrderItem model contains information about the quantity of the product and also references the product’s selling shop, the user’s order, and the product information.
+
