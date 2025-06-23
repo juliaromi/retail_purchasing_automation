@@ -93,5 +93,4 @@ API Views for the main service pages:
  • Get list of orders  
  • Get order details  
   
-Interactive documentation is available at:  
-Swagger UI: http://localhost:8000/swagger/
+Documentation is available at: https://juliaromi.github.io/retail_purchasing_automation/ 
