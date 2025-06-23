@@ -1,0 +1,950 @@
+swagger: '2.0'
+info:
+  title: Shop API
+  description: Retail purchasing automation system
+  version: v1
+host: localhost:8000
+schemes:
+- http
+basePath: /
+consumes:
+- application/json
+produces:
+- application/json
+securityDefinitions:
+  Basic:
+    type: basic
+security:
+- Basic: []
+paths:
+  /api/v1/cart-contains/:
+    get:
+      operationId: api_v1_cart-contains_list
+      description: 'Manages the current user''s cart items: adding, removing, and
+        updating quantities.'
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CartContains'
+      tags:
+      - api
+    post:
+      operationId: api_v1_cart-contains_create
+      description: Adding products to user's cart
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/CartContains'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/CartContains'
+      tags:
+      - api
+    parameters: []
+  /api/v1/cart-contains/{id}/:
+    get:
+      operationId: api_v1_cart-contains_read
+      description: 'Manages the current user''s cart items: adding, removing, and
+        updating quantities.'
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/CartContains'
+      tags:
+      - api
+    put:
+      operationId: api_v1_cart-contains_update
+      description: 'Manages the current user''s cart items: adding, removing, and
+        updating quantities.'
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/CartContains'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/CartContains'
+      tags:
+      - api
+    patch:
+      operationId: api_v1_cart-contains_partial_update
+      description: 'Manages the current user''s cart items: adding, removing, and
+        updating quantities.'
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/CartContains'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/CartContains'
+      tags:
+      - api
+    delete:
+      operationId: api_v1_cart-contains_delete
+      description: Deleting products from user's cart
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: string
+  /api/v1/cart-contains/{id}/decrease/:
+    patch:
+      operationId: api_v1_cart-contains_decrease_quantity
+      description: Decreasing product's quantity in user's cart
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/CartContains'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/CartContains'
+      tags:
+      - api
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: string
+  /api/v1/cart-contains/{id}/increase/:
+    patch:
+      operationId: api_v1_cart-contains_increase_quantity
+      description: Increasing product's quantity in user's cart
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/CartContains'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/CartContains'
+      tags:
+      - api
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: string
+  /api/v1/contacts/:
+    get:
+      operationId: api_v1_contacts_list
+      description: API endpoint for creating, updating, and deleting contacts of the
+        currently authenticated user
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Contact'
+      tags:
+      - api
+    post:
+      operationId: api_v1_contacts_create
+      description: API endpoint for creating, updating, and deleting contacts of the
+        currently authenticated user
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Contact'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Contact'
+      tags:
+      - api
+    parameters: []
+  /api/v1/contacts/{id}/:
+    get:
+      operationId: api_v1_contacts_read
+      description: API endpoint for creating, updating, and deleting contacts of the
+        currently authenticated user
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Contact'
+      tags:
+      - api
+    put:
+      operationId: api_v1_contacts_update
+      description: API endpoint for creating, updating, and deleting contacts of the
+        currently authenticated user
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Contact'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Contact'
+      tags:
+      - api
+    patch:
+      operationId: api_v1_contacts_partial_update
+      description: API endpoint for creating, updating, and deleting contacts of the
+        currently authenticated user
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Contact'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Contact'
+      tags:
+      - api
+    delete:
+      operationId: api_v1_contacts_delete
+      description: API endpoint for creating, updating, and deleting contacts of the
+        currently authenticated user
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: string
+  /api/v1/delivery-address/:
+    get:
+      operationId: api_v1_delivery-address_list
+      description: API endpoint for creating, updating, and deleting the delivery
+        address of the currently authenticated user
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DeliveryAddress'
+      tags:
+      - api
+    post:
+      operationId: api_v1_delivery-address_create
+      description: API endpoint for creating, updating, and deleting the delivery
+        address of the currently authenticated user
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/DeliveryAddress'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/DeliveryAddress'
+      tags:
+      - api
+    parameters: []
+  /api/v1/delivery-address/{id}/:
+    get:
+      operationId: api_v1_delivery-address_read
+      description: API endpoint for creating, updating, and deleting the delivery
+        address of the currently authenticated user
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/DeliveryAddress'
+      tags:
+      - api
+    put:
+      operationId: api_v1_delivery-address_update
+      description: API endpoint for creating, updating, and deleting the delivery
+        address of the currently authenticated user
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/DeliveryAddress'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/DeliveryAddress'
+      tags:
+      - api
+    patch:
+      operationId: api_v1_delivery-address_partial_update
+      description: API endpoint for creating, updating, and deleting the delivery
+        address of the currently authenticated user
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/DeliveryAddress'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/DeliveryAddress'
+      tags:
+      - api
+    delete:
+      operationId: api_v1_delivery-address_delete
+      description: API endpoint for creating, updating, and deleting the delivery
+        address of the currently authenticated user
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: string
+  /api/v1/order-confirmation/confirm-order/:
+    post:
+      operationId: api_v1_order-confirmation_confirm_order
+      description: ViewSet for confirming user orders
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+      - api
+    parameters: []
+  /api/v1/orders/:
+    get:
+      operationId: api_v1_orders_list
+      description: ViewSet for managing user orders
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Order'
+      tags:
+      - api
+    post:
+      operationId: api_v1_orders_create
+      description: ViewSet for managing user orders
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Order'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Order'
+      tags:
+      - api
+    parameters: []
+  /api/v1/orders/history/:
+    get:
+      operationId: api_v1_orders_history
+      description: ViewSet for managing user orders
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/OrderHistory'
+      tags:
+      - api
+    parameters: []
+  /api/v1/orders/user-cart/:
+    get:
+      operationId: api_v1_orders_user_cart
+      description: ViewSet for managing user orders
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Order'
+      tags:
+      - api
+    parameters: []
+  /api/v1/orders/{id}/:
+    get:
+      operationId: api_v1_orders_read
+      description: ViewSet for managing user orders
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Order'
+      tags:
+      - api
+    put:
+      operationId: api_v1_orders_update
+      description: ViewSet for managing user orders
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Order'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Order'
+      tags:
+      - api
+    patch:
+      operationId: api_v1_orders_partial_update
+      description: ViewSet for managing user orders
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Order'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Order'
+      tags:
+      - api
+    delete:
+      operationId: api_v1_orders_delete
+      description: ViewSet for managing user orders
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: string
+  /api/v1/product-list/:
+    get:
+      operationId: api_v1_product-list_list
+      description: Viewing list of products
+      parameters:
+      - name: search
+        in: query
+        description: A search term.
+        required: false
+        type: string
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProductList'
+      tags:
+      - api
+    parameters: []
+  /api/v1/product-list/{id}/:
+    get:
+      operationId: api_v1_product-list_read
+      description: Viewing certain product
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/ProductList'
+      tags:
+      - api
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this Product parameter.
+      required: true
+      type: integer
+  /api/v1/user-delivery-details/:
+    get:
+      operationId: api_v1_user-delivery-details_list
+      description: Admin endpoint for viewing users' delivery address information
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserDeliveryDetails'
+      tags:
+      - api
+    parameters: []
+  /api/v1/user-delivery-details/{id}/:
+    get:
+      operationId: api_v1_user-delivery-details_read
+      description: Admin endpoint for viewing users' delivery address information
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/UserDeliveryDetails'
+      tags:
+      - api
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this User.
+      required: true
+      type: integer
+  /api/v1/users/:
+    get:
+      operationId: api_v1_users_list
+      description: |-
+        CRUD API for user management.
+        Requires admin privileges (IsAdminUser).
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+      tags:
+      - api
+    post:
+      operationId: api_v1_users_create
+      description: |-
+        CRUD API for user management.
+        Requires admin privileges (IsAdminUser).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/User'
+      tags:
+      - api
+    parameters: []
+  /api/v1/users/{id}/:
+    get:
+      operationId: api_v1_users_read
+      description: |-
+        CRUD API for user management.
+        Requires admin privileges (IsAdminUser).
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/User'
+      tags:
+      - api
+    put:
+      operationId: api_v1_users_update
+      description: |-
+        CRUD API for user management.
+        Requires admin privileges (IsAdminUser).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/User'
+      tags:
+      - api
+    patch:
+      operationId: api_v1_users_partial_update
+      description: |-
+        CRUD API for user management.
+        Requires admin privileges (IsAdminUser).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/User'
+      tags:
+      - api
+    delete:
+      operationId: api_v1_users_delete
+      description: |-
+        CRUD API for user management.
+        Requires admin privileges (IsAdminUser).
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this User.
+      required: true
+      type: integer
+  /login/:
+    post:
+      operationId: login_create
+      description: ''
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/AuthToken'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/AuthToken'
+      tags:
+      - login
+    parameters: []
+  /register/:
+    post:
+      operationId: register_create
+      description: Implementation of an endpoint for user registration via POST request
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/User'
+      tags:
+      - register
+    parameters: []
+definitions:
+  CartContains:
+    required:
+    - quantity
+    type: object
+    properties:
+      id:
+        title: Id
+        type: integer
+        readOnly: true
+      name:
+        title: Name
+        type: string
+        readOnly: true
+        minLength: 1
+      shop:
+        title: Shop
+        type: string
+        readOnly: true
+        minLength: 1
+      price:
+        title: Price
+        type: string
+        format: decimal
+        readOnly: true
+      quantity:
+        title: Quantity
+        type: integer
+      total_sum:
+        title: Total sum
+        type: string
+        readOnly: true
+  Contact:
+    required:
+    - value
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      type:
+        title: Type
+        type: string
+        enum:
+        - PHONE
+        - EMAIL
+      value:
+        title: Value
+        type: string
+        minLength: 1
+  DeliveryAddress:
+    required:
+    - city
+    - street
+    - building
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      city:
+        title: City
+        type: string
+        maxLength: 50
+        minLength: 1
+      street:
+        title: Street
+        type: string
+        maxLength: 100
+        minLength: 1
+      building:
+        title: Building
+        type: string
+        maxLength: 10
+        minLength: 1
+      block:
+        title: Block
+        type: string
+        maxLength: 10
+        x-nullable: true
+      structure:
+        title: Structure
+        type: string
+        maxLength: 10
+        x-nullable: true
+      apartment:
+        title: Apartment
+        type: integer
+        maximum: 32767
+        minimum: 0
+        x-nullable: true
+  Order:
+    required:
+    - user
+    - status
+    type: object
+    properties:
+      user_login:
+        title: User login
+        type: string
+        format: email
+        readOnly: true
+        minLength: 1
+      user:
+        title: User
+        type: integer
+      created_at:
+        title: Created at
+        type: string
+        format: date-time
+        readOnly: true
+      status:
+        title: Status
+        type: integer
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/CartContains'
+        readOnly: true
+      order_total:
+        title: Order total
+        type: string
+        readOnly: true
+  OrderHistory:
+    type: object
+    properties:
+      id:
+        title: Id
+        type: integer
+        readOnly: true
+      created_at:
+        title: Created at
+        type: string
+        format: date-time
+        readOnly: true
+      order_total:
+        title: Order total
+        type: string
+        readOnly: true
+      status:
+        title: Status
+        type: string
+        readOnly: true
+  ProductList:
+    required:
+    - name
+    - model
+    - category
+    - shop
+    - price
+    - quantity
+    type: object
+    properties:
+      name:
+        title: Name
+        type: string
+        minLength: 1
+      model:
+        title: Model
+        type: string
+        minLength: 1
+      category:
+        title: Category
+        type: string
+        minLength: 1
+      shop:
+        title: Shop
+        type: string
+        minLength: 1
+      parameter:
+        title: Parameter
+        type: string
+        readOnly: true
+      price:
+        title: Price
+        type: string
+        format: decimal
+      quantity:
+        title: Quantity
+        type: integer
+  UserDeliveryDetails:
+    type: object
+    properties:
+      user:
+        title: User
+        type: string
+        readOnly: true
+      contacts:
+        type: array
+        items:
+          $ref: '#/definitions/Contact'
+        readOnly: true
+      delivery_address:
+        type: array
+        items:
+          $ref: '#/definitions/DeliveryAddress'
+        readOnly: true
+  User:
+    required:
+    - first_name
+    - last_name
+    - login
+    - password
+    type: object
+    properties:
+      first_name:
+        title: First name
+        type: string
+        maxLength: 50
+        minLength: 1
+      middle_name:
+        title: Middle name
+        type: string
+        maxLength: 50
+        x-nullable: true
+      last_name:
+        title: Last name
+        type: string
+        maxLength: 50
+        minLength: 1
+      login:
+        title: Login
+        type: string
+        format: email
+        maxLength: 254
+        minLength: 1
+      password:
+        title: Password
+        type: string
+        maxLength: 128
+        minLength: 1
+      is_staff:
+        title: Is staff
+        type: boolean
+        readOnly: true
+      is_superuser:
+        title: Is superuser
+        type: boolean
+        readOnly: true
+      created_at:
+        title: Created at
+        type: string
+        format: date-time
+        readOnly: true
+  AuthToken:
+    required:
+    - username
+    - password
+    type: object
+    properties:
+      username:
+        title: Username
+        type: string
+        minLength: 1
+      password:
+        title: Password
+        type: string
+        minLength: 1
+      token:
+        title: Token
+        type: string
+        readOnly: true
+        minLength: 1
