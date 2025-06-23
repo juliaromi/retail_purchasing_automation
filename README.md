@@ -3,7 +3,8 @@
 [Project Goal](#project-goal)  
 [Application Overview](#application-overview)  
 [Service Description](#service-description)  
-[Core entities](#core-entities)
+[Core entities](#core-entities)  
+[Implementation of API views](implementation-of-api-views)
   
 
 ### Project Goal:  
@@ -80,3 +81,17 @@ Order model contains information about user's order: order creation date, status
 #### <ins> OrderItem </ins>  
 OrderItem model contains information about the quantity of the product and also references the product’s selling shop, the user’s order, and the product information.
 
+### Implementation of API views  
+API Views for the main service pages:  
+ • Registration
+ • Authorization (Login)  
+ • Get list of products  
+ • Get product details  
+ • Manage shopping cart (add/remove products)  
+ • Add/remove delivery address  
+ • Confirm order  
+ • Get list of orders  
+ • Get order details  
+  
+Interactive documentation is available at:  
+Swagger UI: http://localhost:8000/swagger/
