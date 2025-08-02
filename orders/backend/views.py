@@ -4,12 +4,14 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.backends import AllowAllUsersModelBackend
 from django.core.mail import send_mail
 from django.http import HttpResponse
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.parsers import FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -29,7 +31,6 @@ class UserViewSet(ModelViewSet):
     CRUD API for user management.
     Requires admin privileges (IsAdminUser).
     """
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
@@ -39,7 +40,6 @@ class RegisterView(generics.CreateAPIView):
     """
     Implementation of an endpoint for user registration via POST request
     """
-
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
@@ -50,7 +50,6 @@ class ProductViewSet(ReadOnlyModelViewSet):
     name, quantity, price, shop, category, parameters.
     List of products supports filtering and search. Read-only.
     """
-
     queryset = ProductParameter.objects.select_related(
         'product_info__model__category',
         'product_info__shop',
@@ -86,7 +85,6 @@ class ProductViewSet(ReadOnlyModelViewSet):
         """
         Viewing list of products
         """
-
         queryset = self.filter_queryset(self.get_queryset())
 
         parameters_dict = defaultdict(dict)
@@ -115,7 +113,6 @@ class ProductViewSet(ReadOnlyModelViewSet):
         """
         Viewing certain product
         """
-
         product_info_id = self.kwargs.get(self.lookup_url_kwarg)
 
         queryset = ProductParameter.objects.select_related(
@@ -151,7 +148,6 @@ class CartContainsViewSet(ModelViewSet):
     """
     Manages the current user's cart items: adding, removing, and updating quantities.
     """
-
     serializer_class = CartContainsSerializer
     permission_classes = [IsAuthenticated]
 
@@ -159,7 +155,6 @@ class CartContainsViewSet(ModelViewSet):
         """
         Retrieve user's cart
         """
-
         order = Order.objects.filter(user=self.request.user, status=Order.OrderStatus.CREATED).first()
         if order:
             return OrderItem.objects.filter(order=order)
@@ -170,7 +165,6 @@ class CartContainsViewSet(ModelViewSet):
         """
         Adding products to user's cart
         """
-
         user = request.user
         product_id = request.data.get('product')
         quantity_required = int(request.data.get('quantity', 1))
@@ -207,7 +201,6 @@ class CartContainsViewSet(ModelViewSet):
         """
         Deleting products from user's cart
         """
-
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -217,7 +210,6 @@ class CartContainsViewSet(ModelViewSet):
         """
         Decreasing product's quantity in user's cart
         """
-
         instance = self.get_object()
         amount = int(request.data.get('amount', 1))
 
@@ -237,7 +229,6 @@ class CartContainsViewSet(ModelViewSet):
         """
         Increasing product's quantity in user's cart
         """
-
         instance = self.get_object()
         amount = int(request.data.get('amount', 1))
 
@@ -258,7 +249,6 @@ class ContactViewSet(ModelViewSet):
     """
     API endpoint for creating, updating, and deleting contacts of the currently authenticated user
     """
-
     serializer_class = ContactSerializer
     permission_classes = [IsAuthenticated]
 
@@ -285,7 +275,6 @@ class DeliveryAddressViewSet(ModelViewSet):
     """
     API endpoint for creating, updating, and deleting the delivery address of the currently authenticated user
     """
-
     serializer_class = DeliveryAddressSerializer
     permission_classes = [IsAuthenticated]
 
@@ -312,7 +301,6 @@ class UserDeliveryDetailsViewSet(ReadOnlyModelViewSet):
     """
     Admin endpoint for viewing users' delivery address information
     """
-
     queryset = User.objects.all()
     serializer_class = UserDeliveryDetailsSerializer
     permission_classes = [IsAdminUser]
@@ -322,7 +310,6 @@ class OrderViewSet(ModelViewSet):
     """
     ViewSet for managing user orders
     """
-
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
@@ -353,7 +340,6 @@ class OrderConfirmationViewSet(viewsets.ViewSet):
     """
     ViewSet for confirming user orders
     """
-
     @action(detail=False, methods=['post'], url_path='confirm-order')
     def confirm_order(self, request):
         serializer = ConfirmOrderSerializer(data=request.data, context={'request': request})
@@ -430,31 +416,26 @@ class ModelViewSet(ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class ProductInfoViewSet(ReadOnlyModelViewSet):
+class ProductInfoViewSet(ModelViewSet):
     queryset = ProductInfo.objects.all()
     serializer_class = ProductInfoSerializer
+    parser_classes = [MultiPartParser, FormParser]
 
-    @swagger_auto_schema(auto_schema=None)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(auto_schema=None)
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    @swagger_auto_schema(auto_schema=None)
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @swagger_auto_schema(auto_schema=None)
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
-    @swagger_auto_schema(auto_schema=None)
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
 
-    @swagger_auto_schema(auto_schema=None)
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 

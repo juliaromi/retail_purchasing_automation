@@ -8,7 +8,6 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
-
     def create_user(self, login, password, **extra_fields):
         if not login:
             raise ValidationError('Email address must be provided')
@@ -47,7 +46,6 @@ class User(AbstractUser):
     """
     User model
     """
-
     first_name = models.CharField(max_length=50, blank=False)
     middle_name = models.CharField(max_length=50, blank=True, null=True)
     last_name= models.CharField(max_length=50, blank=False)
@@ -74,7 +72,6 @@ class Shop(models.Model):
     """
     Shop model
     """
-
     name = models.CharField(max_length=50, blank=False, null=False, unique=True)
     site = models.URLField(blank=True, null=True)
 
@@ -92,7 +89,6 @@ class Category(models.Model):
     """
     Product category model
     """
-
     shops = models.ManyToManyField(Shop, related_name='product_categories')
     name = models.CharField(max_length=50, blank=False, null=False, unique=True)
 
@@ -110,7 +106,6 @@ class Model(models.Model):
     """
     Product model model
     """
-
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='product_models')
     name = models.CharField(unique=True, max_length=50, blank=False, null=False)
 
@@ -127,20 +122,16 @@ class Model(models.Model):
 class ProductInfo(models.Model):
     """
     Product information model:
-        - product name
-        - model
-        - shop
-        - quantity
-        - price
-        - recommended retail price (rrp)
+        product name, model, shop, quantity, price, recommended retail price (rrp)
     """
-
     product_name = models.CharField(blank=False, null=False)
     model = models.ForeignKey(Model, on_delete=models.CASCADE, related_name='products_info')
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='products_info')
     quantity = models.PositiveIntegerField(blank=False, null=False)
     price = models.DecimalField(max_digits=12, decimal_places=2, blank=False, null=False)
     rrp = models.DecimalField(max_digits=12, decimal_places=2, blank=False, null=False)
+
+    image = models.ImageField(upload_to='product_images/', blank=True, null=True)
 
     objects = models.Manager()
 
@@ -168,7 +159,6 @@ class Parameter(models.Model):
     """
     Product parameters model
     """
-
     name = models.CharField(max_length=50, blank=False, null=False, unique=True)
 
     objects = models.Manager()
@@ -185,7 +175,6 @@ class ProductParameter(models.Model):
     """
     Product parameter model
     """
-
     product_info = models.ForeignKey(ProductInfo, on_delete=models.CASCADE, blank=False, null=False)
     parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE, blank=False, null=False)
     value = models.CharField(max_length=50, blank=False, null=False)
@@ -204,7 +193,6 @@ class Contact(models.Model):
     """
     User contact model
     """
-
     TYPES = [
         ('PHONE', 'phone number'),
         ('EMAIL', 'email'),
@@ -238,7 +226,6 @@ class DeliveryAddress(models.Model):
     """
     User delivery address model
     """
-
     city = models.CharField(max_length=50, blank=False, null=False)
     street = models.CharField(max_length=100, blank=False, null=False)
     building = models.CharField(max_length=10, blank=False, null=False)
@@ -292,7 +279,6 @@ class Order(models.Model):
     """
     Order model
     """
-
     class OrderStatus(models.IntegerChoices):
         CREATED = 0
         CONFIRMED = 1
@@ -333,7 +319,6 @@ class OrderItem(models.Model):
     """
     Order item model
     """
-
     order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=False, null=False)
     product = models.ForeignKey(ProductInfo, on_delete=models.CASCADE, blank=False, null=False)
     shop =models.ForeignKey(Shop, on_delete=models.CASCADE, blank=False, null=False)
