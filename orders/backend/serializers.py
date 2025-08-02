@@ -302,10 +302,11 @@ class ProductInfoSerializer(serializers.ModelSerializer):
     model_name = serializers.CharField(source='model.name', read_only=True)
     shop = serializers.PrimaryKeyRelatedField(queryset=Shop.objects.all(), write_only=True)
     shop_name = serializers.CharField(source='shop.name', read_only=True)
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = ProductInfo
-        fields = ['product_name', 'model', 'model_name', 'shop', 'shop_name', 'quantity', 'price', 'rrp']
+        fields = ['product_name', 'model', 'model_name', 'shop', 'shop_name', 'quantity', 'price', 'rrp', 'image']
 
     def validate(self, value):
         if ProductInfo.objects.filter(product_name=value.get('product_name'), shop=value.get('shop')).exists():
