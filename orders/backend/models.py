@@ -55,6 +55,8 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     username = None
 
+    image = models.ImageField(upload_to='user_images/', blank=True, null=True)
+
     USERNAME_FIELD = 'login'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 

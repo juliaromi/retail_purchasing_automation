@@ -11,6 +11,8 @@ class UserSerializer(serializers.ModelSerializer):
     User model serializer with password handling and data validation.
     """
 
+    image = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = User
         fields = [
@@ -21,7 +23,8 @@ class UserSerializer(serializers.ModelSerializer):
             'password',
             'is_staff',
             'is_superuser',
-            'created_at'
+            'created_at',
+            'image',
         ]
         read_only_fields = ['created_at', 'is_staff', 'is_superuser']
         extra_kwargs = {'password': {'write_only': True}}
