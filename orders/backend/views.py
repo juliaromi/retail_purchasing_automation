@@ -33,7 +33,8 @@ class UserViewSet(ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+    #permission_classes = [IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser]
 
 
 class RegisterView(generics.CreateAPIView):
