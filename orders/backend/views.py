@@ -20,6 +20,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductListFilter
 from .models import User, Shop, Category, Model, ProductInfo, Parameter, ProductParameter, Order, OrderItem, Contact, \
     DeliveryAddress
+from .permissions import IsAdminOrReadOnly
 from .serializers import UserSerializer, ShopSerializer, CategorySerializer, ModelSerializer, ProductInfoSerializer, \
     ParameterSerializer, ProductParameterSerializer, OrderSerializer, OrderItemSerializer, ContactSerializer, \
     ProductListSerializer, CartContainsSerializer, DeliveryAddressSerializer, UserDeliveryDetailsSerializer, \
@@ -421,6 +422,7 @@ class ProductInfoViewSet(ModelViewSet):
     queryset = ProductInfo.objects.all()
     serializer_class = ProductInfoSerializer
     parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAdminOrReadOnly]
 
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
