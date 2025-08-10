@@ -20,7 +20,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ProductListFilter
 from .models import User, Shop, Category, Model, ProductInfo, Parameter, ProductParameter, Order, OrderItem, Contact, \
     DeliveryAddress
-from .permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsAdminOrSelf
 from .serializers import UserSerializer, ShopSerializer, CategorySerializer, ModelSerializer, ProductInfoSerializer, \
     ParameterSerializer, ProductParameterSerializer, OrderSerializer, OrderItemSerializer, ContactSerializer, \
     ProductListSerializer, CartContainsSerializer, DeliveryAddressSerializer, UserDeliveryDetailsSerializer, \
@@ -34,8 +34,15 @@ class UserViewSet(ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    #permission_classes = [IsAdminUser]
     parser_classes = [MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        if self.action == 'list' or self.action == 'create':
+            permission_classes = [IsAdminUser]
+        else:
+            permission_classes = [IsAdminOrSelf]
+
+        return [permission() for permission in permission_classes]
 
 
 class RegisterView(generics.CreateAPIView):

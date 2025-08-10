@@ -12,6 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
     """
 
     image = serializers.ImageField(required=False, allow_null=True)
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
     class Meta:
         model = User
@@ -30,14 +31,15 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, value):
-        if not value.get('first_name'):
-            raise serializers.ValidationError('First name cannot be empty')
-        if not value.get('last_name'):
-            raise serializers.ValidationError('Last name cannot be empty')
-        if not value.get('login'):
-            raise serializers.ValidationError('Login cannot be empty')
-        if User.objects.filter(login=value.get('login')).exists():
-            raise serializers.ValidationError('The login already exist')
+        if self.instance is None:
+            if not value.get('first_name'):
+                raise serializers.ValidationError('First name cannot be empty')
+            if not value.get('last_name'):
+                raise serializers.ValidationError('Last name cannot be empty')
+            if not value.get('login'):
+                raise serializers.ValidationError('Login cannot be empty')
+            if User.objects.filter(login=value.get('login')).exists():
+                raise serializers.ValidationError('The login already exist')
         return value
 
     def create(self, validated_data):
