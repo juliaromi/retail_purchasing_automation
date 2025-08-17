@@ -87,7 +87,7 @@ jobs:
           pip install pytest-cov
 
           pytest orders/backend/tests.py --maxfail=1 --disable-warnings -q \
-            --cov=orders/backend/views.py --cov-report=xml:coverage.xml --cov-report=term
+            --cov=orders/backend --cov-report=xml:coverage.xml --cov-report=term
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
