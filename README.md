@@ -94,3 +94,5 @@ API Views for the main service pages:
  • Get order details  
   
 Documentation is available at: https://juliaromi.github.io/retail_purchasing_automation/ 
+
+[![codecov](https://codecov.io/gh/juliaromi/retail_purchasing_automation/branch/main/graph/badge.svg)](https://codecov.io/gh/juliaromi/retail_purchasing_automation)
