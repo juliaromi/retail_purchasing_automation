@@ -82,4 +82,21 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest orders --maxfail=1 --disable-warnings -q
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov
+
+          pytest orders/backend --maxfail=1 --disable-warnings -q \
+            --cov=orders/backend --cov-report=xml:coverage.xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+
+      - name: Publish coverage to PR
+        uses: orgoro/coverage@v3.2
+        with:
+          coverageFile: coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
