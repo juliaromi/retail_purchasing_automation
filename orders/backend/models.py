@@ -8,13 +8,16 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, login, password, **extra_fields):
+    def create_user(self, login, **extra_fields):
+        password = extra_fields.pop("password", None)
+
         if not login:
             raise ValidationError('Email address must be provided')
-        if not password:
-            raise ValidationError('Password must be provided')
         user = self.model(login=login, **extra_fields)
-        user.set_password(password)
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
 
         return user
