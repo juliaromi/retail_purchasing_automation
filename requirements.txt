@@ -14,3 +14,4 @@ PyYAML==6.0.2
 drf-yasg==1.21.10
 redis==6.2.0
 requests==2.31.0
+social-auth-app-django==5.5.1
